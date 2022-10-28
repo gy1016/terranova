@@ -1,5 +1,11 @@
+import { GLCapabilityType } from "../base/Constant";
 import { Canvas } from "../Canvas";
+import { Mesh } from "../graphic/Mesh";
+import { GLCapability } from "./GLCapability";
+import { GLExtensions } from "./GLExtensions";
+import { GLPrimitive } from "./GLPrimitive";
 import { RenderStates } from "./RenderStates";
+import { WebGLExtension } from "./type";
 
 /**
  * WebGL mode.
@@ -23,10 +29,12 @@ export interface WebGLRendererOptions extends WebGLContextAttributes {
 
 export class Renderer {
   private _options: WebGLRendererOptions;
-  private _gl: WebGLRenderingContext | WebGL2RenderingContext;
+  private _gl: (WebGLRenderingContext & WebGLExtension) | WebGL2RenderingContext;
   private _renderStates: RenderStates;
   private _canvas: Canvas;
   private _isWebGL2: boolean;
+  private _extensions: GLExtensions;
+  private _capability: GLCapability;
 
   private _activeTextureID: number;
 
@@ -46,6 +54,10 @@ export class Renderer {
     return this._renderStates;
   }
 
+  get capability(): GLCapability {
+    return this._capability;
+  }
+
   constructor(options: WebGLRendererOptions = {}) {
     this._options = options;
   }
@@ -56,7 +68,7 @@ export class Renderer {
     option.stencil === undefined && (option.stencil = true);
     const webCanvas = (this._canvas = canvas)._canvas;
     const webGLMode = option.webGLMode || WebGLMode.Auto;
-    let gl: WebGLRenderingContext | WebGL2RenderingContext;
+    let gl: (WebGLRenderingContext & WebGLExtension) | WebGL2RenderingContext;
 
     if (webGLMode == WebGLMode.Auto || webGLMode == WebGLMode.WebGL2) {
       gl = webCanvas.getContext("webgl2", option);
@@ -66,7 +78,7 @@ export class Renderer {
 
     if (!gl) {
       if (webGLMode == WebGLMode.Auto || webGLMode == WebGLMode.WebGL1) {
-        gl = webCanvas.getContext("webgl", option);
+        gl = <WebGLRenderingContext & WebGLExtension>webCanvas.getContext("webgl", option);
         this._isWebGL2 = false;
       }
     }
@@ -83,10 +95,24 @@ export class Renderer {
     this._gl = gl;
     this._activeTextureID = gl.TEXTURE0;
     this._renderStates = new RenderStates(gl);
+    this._extensions = new GLExtensions(this);
+    this._capability = new GLCapability(this);
 
     // Make sure the active texture in gl context is on default, because gl context may be used in other webgl renderer.
     gl.activeTexture(gl.TEXTURE0);
 
     this._options = null;
+  }
+
+  createPrimitive(primitive: Mesh): GLPrimitive {
+    return new GLPrimitive(this, primitive);
+  }
+
+  requireExtension(ext: GLCapabilityType) {
+    return this._extensions.requireExtension(ext);
+  }
+
+  canIUse(capabilityType: GLCapabilityType) {
+    return this.capability.canIUse(capabilityType);
   }
 }
