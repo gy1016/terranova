@@ -1,6 +1,7 @@
 import { GLCapabilityType } from "../base/Constant";
 import { Canvas } from "../Canvas";
 import { Mesh } from "../graphic/Mesh";
+import { Texture } from "../texture";
 import { GLCapability } from "./GLCapability";
 import { GLExtensions } from "./GLExtensions";
 import { GLPrimitive } from "./GLPrimitive";
@@ -37,6 +38,7 @@ export class Renderer {
   private _capability: GLCapability;
 
   private _activeTextureID: number;
+  private _activeTextures: Texture[] = new Array(32);
 
   get isWebGL2() {
     return this._isWebGL2;
@@ -114,5 +116,20 @@ export class Renderer {
 
   canIUse(capabilityType: GLCapabilityType) {
     return this.capability.canIUse(capabilityType);
+  }
+
+  activeTexture(textureID: number): void {
+    if (this._activeTextureID !== textureID) {
+      this._gl.activeTexture(textureID);
+      this._activeTextureID = textureID;
+    }
+  }
+
+  bindTexture(texture: Texture): void {
+    const index = this._activeTextureID - this._gl.TEXTURE0;
+    if (this._activeTextures[index] !== texture) {
+      this._gl.bindTexture(texture._target, texture._glTexture);
+      this._activeTextures[index] = texture;
+    }
   }
 }
