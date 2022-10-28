@@ -2,8 +2,9 @@ import { Canvas } from "./Canvas";
 import { Renderer, WebGLRendererOptions } from "./render/Renderer";
 
 export class Engine {
+  _renderer: Renderer;
+
   protected _canvas: Canvas;
-  protected _renderer: Renderer;
 
   /**
    * The canvas to use for rendering.
