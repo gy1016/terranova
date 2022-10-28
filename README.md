@@ -23,7 +23,7 @@ _✨ Author: lamb ✨_
 
 # 介绍
 
-由武汉大学空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。
+由空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。
 
 # 文档
 
