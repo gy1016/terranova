@@ -1,5 +1,5 @@
 {
-  "include": ["src/"],
+  "include": ["src/**/*"],
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
@@ -9,6 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "declarationDir": "./dist",
+    "outDir": "./dist",
     "sourceMap": true,
     "baseUrl": "./",
     "emitDeclarationOnly": false,

@@ -12,8 +12,10 @@ export class Engine {
     return this._canvas;
   }
 
-  constructor(canvas: string, webGLRendererOptions?: WebGLRendererOptions) {
-    const webCanvas = new Canvas(<HTMLCanvasElement>document.getElementById(canvas));
+  constructor(canvas: string | HTMLCanvasElement, webGLRendererOptions?: WebGLRendererOptions) {
+    const webCanvas = new Canvas(
+      <HTMLCanvasElement>(typeof canvas === "string" ? document.getElementById(canvas) : canvas)
+    );
     const hardwareRenderer = new Renderer(webGLRendererOptions);
     hardwareRenderer.init(webCanvas);
 
