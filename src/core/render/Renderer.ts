@@ -1,6 +1,7 @@
 import { GLCapabilityType } from "../base/Constant";
 import { Canvas } from "../Canvas";
 import { Mesh } from "../graphic/Mesh";
+import { ShaderProgram } from "../shader/ShaderProgram";
 import { Texture } from "../texture";
 import { GLCapability } from "./GLCapability";
 import { GLExtensions } from "./GLExtensions";
@@ -39,6 +40,8 @@ export class Renderer {
 
   private _activeTextureID: number;
   private _activeTextures: Texture[] = new Array(32);
+
+  _currentBind: ShaderProgram;
 
   get isWebGL2() {
     return this._isWebGL2;
