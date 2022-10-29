@@ -6,3 +6,6 @@ dist
 
 # 文档界面忽略
 docs
+
+# mock文件
+mock

@@ -1,8 +1,10 @@
 import { GLCapabilityType } from "../base/Constant";
 import { Engine } from "../Engine";
+import { ShaderFactory } from "../shaderlib";
 import { ShaderDataGroup } from "./enums/ShaderDataGroup";
 import { ShaderMacro } from "./ShaderMacro";
 import { ShaderMacroCollection } from "./ShaderMacroCollection";
+import { ShaderProgram } from "./ShaderProgram";
 import { ShaderProperty } from "./ShaderProperty";
 
 /**
@@ -34,6 +36,14 @@ export class Shader {
       throw `Shader named "${name}" already exists.`;
     }
     return (shaderMap[name] = new Shader(name, vertexSource, fragmentSource));
+  }
+
+  /**
+   * Find a shader by name.
+   * @param name - Name of the shader
+   */
+  static find(name: string): Shader {
+    return Shader._shaderMap[name];
   }
 
   /**
@@ -70,14 +80,6 @@ export class Shader {
       Shader._macroCounter++;
     }
     return macro;
-  }
-
-  /**
-   * Find a shader by name.
-   * @param name - Name of the shader
-   */
-  static find(name: string): Shader {
-    return Shader._shaderMap[name];
   }
 
   /**
@@ -167,7 +169,7 @@ export class Shader {
       return shaderProgram;
     }
 
-    const isWebGL2: boolean = engine._hardwareRenderer.isWebGL2;
+    const isWebGL2: boolean = engine._renderer.isWebGL2;
     const macroNameList = [];
     Shader._getNamesByMacros(macroCollection, macroNameList);
     const macroNameStr = ShaderFactory.parseCustomMacros(macroNameList);
@@ -182,10 +184,10 @@ export class Shader {
       #endif
       `;
 
-    if (engine._hardwareRenderer.canIUse(GLCapabilityType.shaderTextureLod)) {
+    if (engine._renderer.canIUse(GLCapabilityType.shaderTextureLod)) {
       precisionStr += "#define HAS_TEX_LOD\n";
     }
-    if (engine._hardwareRenderer.canIUse(GLCapabilityType.standardDerivatives)) {
+    if (engine._renderer.canIUse(GLCapabilityType.standardDerivatives)) {
       precisionStr += "#define HAS_DERIVATIVES\n";
     }
 
