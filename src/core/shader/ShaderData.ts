@@ -1,4 +1,4 @@
-import { Color, Matrix, Vector2, Vector3, Vector4 } from "@/math";
+import { Color, Matrix, Vector2, Vector3, Vector4 } from "../../math";
 import { Texture } from "../texture/Texture";
 import { ShaderDataGroup } from "./enums/ShaderDataGroup";
 import { ShaderPropertyType } from "./enums/ShaderPropertyType";

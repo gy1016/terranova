@@ -1,6 +1,7 @@
-import { BoundingBox } from "@/math/BoundingBox";
+import { BoundingBox } from "../../math";
 import { Engine } from "../Engine";
 import { GLPrimitive } from "../render/GLPrimitive";
+import { ShaderProgram } from "../shader";
 import { MeshTopology } from "./enums/MeshTopology";
 import { IndexBufferBinding } from "./IndexBufferBinding";
 import { SubMesh } from "./SubMesh";
@@ -105,7 +106,7 @@ export abstract class Mesh {
   /**
    * @internal
    */
-  _draw(shaderProgram: any, subMesh: SubMesh): void {
+  _draw(shaderProgram: ShaderProgram, subMesh: SubMesh): void {
     this._glPrimitive.draw(shaderProgram, subMesh);
   }
 }

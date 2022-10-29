@@ -1,4 +1,4 @@
-import { Color, Matrix, Vector2, Vector3, Vector4 } from "@/math";
+import { Color, Matrix, Vector2, Vector3, Vector4 } from "../../math";
 import { Engine } from "../Engine";
 import { Renderer } from "../render/Renderer";
 import { Texture } from "../texture";

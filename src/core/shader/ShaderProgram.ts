@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4 } from "@/math";
+import { Vector2, Vector3, Vector4 } from "../../math";
 import { Logger } from "../base/Logger";
 import { Engine } from "../Engine";
 import { Renderer } from "../render/Renderer";
