@@ -1,10 +1,17 @@
 import { Canvas } from "./Canvas";
 import { Renderer, WebGLRendererOptions } from "./render/Renderer";
+import { Texture2D, Texture2DArray, TextureCube } from "./texture";
 
 export class Engine {
-  _renderer: Renderer;
-
   protected _canvas: Canvas;
+
+  _renderer: Renderer;
+  /* @internal */
+  _magentaTexture2D: Texture2D;
+  /* @internal */
+  _magentaTextureCube: TextureCube;
+  /* @internal */
+  _magentaTexture2DArray: Texture2DArray;
 
   /**
    * The canvas to use for rendering.
