@@ -23,7 +23,7 @@ _✨ Author: lamb ✨_
 
 # 介绍
 
-由空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。
+由空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。借鉴 [oasis](https://github.com/oasis-engine/engine) 对渲染上下文的封装，并增添 GIS 领域算法与模块，实现新的三维虚拟地球应用。
 
 # 文档
 
@@ -33,7 +33,7 @@ _✨ Author: lamb ✨_
 
 whuer3d 目前包含六大模块，架构图如下所示：
 
-![Engine Architecture](http://121.199.160.202/images/project/lamb3d/systemstruct.png)
+![Engine Architecture](http://121.199.160.202/images/project/lamb3d/struct.png)
 
 引擎最重要和最基本的模块是程序如何组织和管理数据以及如何与 GPU 进行通信。 图形模块用于创建缓冲区对象并存储顶点和索引数据。 架构如下：
 
@@ -48,7 +48,7 @@ whuer3d 目前包含六大模块，架构图如下所示：
 首先我们使用 pnpm 来安装：
 
 ```bash
-pnpm install lamb3d
+pnpm install whuer3d
 ```
 
 然后我们创建一个画布标签并指定 id：
@@ -60,10 +60,10 @@ pnpm install lamb3d
 最后，我们写一段 js 代码：
 
 ```js
-import { Engine } from "lamb3d";
+import { Engine } from "whuer3d";
 
-const lamb3d = new Engine("lamb");
-lamb3d.run();
+const whuer3d = new Engine("lamb");
+whuer3d.run();
 ```
 
 我们来看看效果：
@@ -74,8 +74,10 @@ lamb3d.run();
 
 - WebGlobe: https://github.com/iSpring/WebGlobe
 
+- OpenGlobe: https://github.com/virtualglobebook/OpenGlobe
+
 - oasis: https://github.com/oasis-engine/engine
 
-- cesium: https://github.com/CesiumGS/cesium
+- Cesium: https://github.com/CesiumGS/cesium
 
 - MadDream3D: https://github.com/bajieSummer/MadDream3D
