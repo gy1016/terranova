@@ -2,6 +2,7 @@ import { GLCapabilityType } from "../base/Constant";
 import { Logger } from "../base/Logger";
 import { Mesh } from "../graphic/Mesh";
 import { SubMesh } from "../graphic/SubMesh";
+import { ShaderProgram } from "../shader";
 import { Renderer } from "./Renderer";
 import { WebGLExtension } from "./type";
 
@@ -34,7 +35,7 @@ export class GLPrimitive {
   /**
    * Draw the primitive.
    */
-  draw(shaderProgram: any, subMesh: SubMesh): void {
+  draw(shaderProgram: ShaderProgram, subMesh: SubMesh): void {
     const gl = this.gl;
     const primitive = this._primitive;
     const useVao = this._useVao && primitive._enableVAO;
@@ -105,7 +106,7 @@ export class GLPrimitive {
   /**
    * Bind buffer and attribute.
    */
-  protected bindBufferAndAttrib(shaderProgram: any): void {
+  protected bindBufferAndAttrib(shaderProgram: ShaderProgram): void {
     const gl = this.gl;
     const primitive = this._primitive;
     const vertexBufferBindings = primitive._vertexBufferBindings;
@@ -153,7 +154,7 @@ export class GLPrimitive {
     }
   }
 
-  private registerVAO(shaderProgram: any): void {
+  private registerVAO(shaderProgram: ShaderProgram): void {
     const gl = this.gl;
     const vao = gl.createVertexArray();
 
