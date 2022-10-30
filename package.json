@@ -53,8 +53,7 @@
   },
   "lint-staged": {
     "*.{js|ts}": [
-      "prettier -w .",
-      "eslint --fix"
+      "npm run test"
     ]
   }
 }
