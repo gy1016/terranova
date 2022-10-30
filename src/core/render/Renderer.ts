@@ -135,4 +135,8 @@ export class Renderer {
       this._activeTextures[index] = texture;
     }
   }
+
+  destroy() {
+    console.log("Renderer destroy.");
+  }
 }
