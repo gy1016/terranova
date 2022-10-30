@@ -22,8 +22,8 @@
   ],
   "scripts": {
     "prepare": "husky install",
-    "dev": "cross-env NODE_ENV=development rollup -cw -m inline",
-    "build": "rollup -c",
+    "dev": "cross-env NODE_ENV=development rollup -cw --bundleConfigAsCjs -m inline",
+    "build": "rollup -c --bundleConfigAsCjs",
     "test": "jest --passWithNoTests",
     "format": "prettier --write \"**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .js,.ts ."

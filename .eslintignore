@@ -9,3 +9,6 @@ docs
 
 # mock文件
 mock
+
+# 配置文件忽略
+rollup.config.js
