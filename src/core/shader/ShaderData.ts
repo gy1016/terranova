@@ -19,7 +19,6 @@ export class ShaderData {
   _macroCollection: ShaderMacroCollection = new ShaderMacroCollection();
 
   private _macroMap: Record<number, ShaderMacro> = Object.create(null);
-  private _refCount: number = 0;
 
   /**
    * @internal
@@ -584,6 +583,7 @@ export class ShaderData {
       property = Shader.getPropertyByName(property);
     }
 
+    // ! ShaderData根据ShaderProperty的unquieId来存放数据，并在设置数据时直接指定分组
     if (property._group !== this._group) {
       if (property._group === undefined) {
         property._group = this._group;

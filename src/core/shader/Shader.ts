@@ -163,6 +163,7 @@ export class Shader {
    * @internal
    */
   _getShaderProgram(engine: Engine, macroCollection: ShaderMacroCollection): ShaderProgram {
+    // 得到该Shader对应的ShaderProgramPool
     const shaderProgramPool = engine._getShaderProgramPool(this);
     let shaderProgram = shaderProgramPool.get(macroCollection);
     if (shaderProgram) {

@@ -16,6 +16,7 @@ import { ShaderUniformBlock } from "./ShaderUniformBlock";
 export class ShaderProgram {
   private static _counter: number = 0;
 
+  // 为shader代码添加行号列号，便于调试
   private static _addLineNum(str: string) {
     const lines = str.split("\n");
     const limitLength = (lines.length + 1).toString().length + 6;
