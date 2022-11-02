@@ -34,6 +34,10 @@ export class Camera {
     return this._engine;
   }
 
+  get transform() {
+    return this._transform;
+  }
+
   /**
    * Near clip plane - the closest point to the camera when rendering occurs.
    */
