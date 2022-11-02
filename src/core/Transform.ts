@@ -661,7 +661,7 @@ export class Transform {
       return this._parentTransformCache;
     }
     let parentCache: Transform = null;
-    let parent = this._entity.parent;
+    let parent = this._entity?.parent;
     while (parent) {
       const transform = parent.transform;
       if (transform) {

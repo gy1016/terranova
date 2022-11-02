@@ -21,6 +21,7 @@ specifiers:
   rollup-plugin-serve: ^2.0.1
   rollup-plugin-typescript2: ^0.34.1
   ts-jest: ^29.0.3
+  tslib: ^2.4.1
   typescript: ^4.8.4
 
 devDependencies:
@@ -44,6 +45,7 @@ devDependencies:
   rollup-plugin-serve: registry.npmmirror.com/rollup-plugin-serve/2.0.1
   rollup-plugin-typescript2: registry.npmmirror.com/rollup-plugin-typescript2/0.34.1_655ssj4e7sdqlljrreeiqtltve
   ts-jest: registry.npmmirror.com/ts-jest/29.0.3_r7gdwuj75x2gz25bauak3xcnbm
+  tslib: registry.npmmirror.com/tslib/2.4.1
   typescript: registry.npmmirror.com/typescript/4.8.4
 
 packages:
@@ -5231,7 +5233,7 @@ packages:
       fs-extra: registry.npmmirror.com/fs-extra/10.1.0
       rollup: registry.npmmirror.com/rollup/3.2.3
       semver: registry.npmmirror.com/semver/7.3.8
-      tslib: registry.npmmirror.com/tslib/2.4.0
+      tslib: registry.npmmirror.com/tslib/2.4.1
       typescript: registry.npmmirror.com/typescript/4.8.4
     dev: true
 
@@ -5266,7 +5268,7 @@ packages:
     name: rxjs
     version: 7.5.7
     dependencies:
-      tslib: registry.npmmirror.com/tslib/2.4.0
+      tslib: registry.npmmirror.com/tslib/2.4.1
     dev: true
 
   registry.npmmirror.com/safe-buffer/5.1.2:
@@ -5836,10 +5838,10 @@ packages:
     version: 1.14.1
     dev: true
 
-  registry.npmmirror.com/tslib/2.4.0:
-    resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tslib/-/tslib-2.4.0.tgz}
+  registry.npmmirror.com/tslib/2.4.1:
+    resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tslib/-/tslib-2.4.1.tgz}
     name: tslib
-    version: 2.4.0
+    version: 2.4.1
     dev: true
 
   registry.npmmirror.com/tsutils/3.21.0_typescript@4.8.4:

@@ -2,7 +2,7 @@ import { MathUtil, Matrix, Vector2, Vector4 } from "../math";
 import { BoolUpdateFlag } from "./BoolUpdateFlag";
 import { deepClone, ignoreClone } from "./clone";
 import { Engine } from "./Engine";
-import { ShaderData, ShaderDataGroup } from "./shader";
+import { Shader, ShaderData, ShaderDataGroup } from "./shader";
 import { Transform } from "./Transform";
 
 export class Camera {
@@ -29,6 +29,8 @@ export class Camera {
   private _viewport: Vector4 = new Vector4(0, 0, 1, 1);
   @deepClone
   private _lastAspectSize: Vector2 = new Vector2(0, 0);
+
+  private static _vpMatrixProperty = Shader.getPropertyByName("u_MvpMat");
 
   get engine() {
     return this._engine;
@@ -152,5 +154,24 @@ export class Camera {
   constructor(engine: Engine) {
     this._engine = engine;
     this._transform = new Transform();
+    this._isViewMatrixDirty = this._transform.registerWorldChangeFlag();
+  }
+
+  /**
+   * Upload camera-related shader data.
+   */
+  private _updateShaderData(): void {
+    const shaderData = this.shaderData;
+    const vpMat = new Matrix();
+    // 注意顺序：perspect * view * model
+    Matrix.multiply(this.projectionMatrix, this.viewMatrix, vpMat);
+    shaderData.setMatrix(Camera._vpMatrixProperty, vpMat);
+  }
+
+  /**
+   * The upload method is triggered by render.
+   */
+  render(): void {
+    this._updateShaderData();
   }
 }
