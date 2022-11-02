@@ -5,3 +5,4 @@ export { ShaderProperty } from "./ShaderProperty";
 export { ShaderProgramPool } from "./ShaderProgramPool";
 export { ShaderProgram } from "./ShaderProgram";
 export { ShaderPool } from "./ShaderPool";
+export { ShaderDataGroup } from "./enums/ShaderDataGroup";

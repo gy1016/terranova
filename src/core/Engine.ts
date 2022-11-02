@@ -1,7 +1,11 @@
 import { Canvas } from "./Canvas";
+import { PrimitiveMesh } from "./mesh";
 import { Renderer, WebGLRendererOptions } from "./render/Renderer";
-import { Shader, ShaderProgramPool } from "./shader";
+import { Shader, ShaderPool, ShaderProgramPool } from "./shader";
+import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
 import { Texture2D, Texture2DArray, TextureCube } from "./texture";
+
+ShaderPool.init();
 
 export class Engine {
   protected _canvas: Canvas;
@@ -40,6 +44,7 @@ export class Engine {
   _getShaderProgramPool(shader: Shader): ShaderProgramPool {
     const index = shader._shaderId;
     const shaderProgramPools = this._shaderProgramPools;
+    // 每一个Shader都有一个ShaderProgramPools
     let pool = shaderProgramPools[index];
     if (!pool) {
       const length = index + 1;
@@ -49,5 +54,18 @@ export class Engine {
       shaderProgramPools[index] = pool = new ShaderProgramPool();
     }
     return pool;
+  }
+
+  /**
+   * Execution engine loop.
+   */
+  run(): void {
+    this._canvas.resizeByClientSize();
+    this._renderer.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    const cube = PrimitiveMesh.createCuboid(this);
+    const testProgram = Shader.find("test")._getShaderProgram(this, new ShaderMacroCollection());
+    testProgram.bind();
+    cube._draw(testProgram, cube.subMesh);
+    console.log("run");
   }
 }
