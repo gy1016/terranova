@@ -18,6 +18,10 @@ export class Scene {
     return this._engine;
   }
 
+  get camera() {
+    return this._camera;
+  }
+
   get rootEntities() {
     return this._rootEntities;
   }

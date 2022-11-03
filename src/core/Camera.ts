@@ -2,6 +2,7 @@ import { MathUtil, Matrix, Vector2, Vector4 } from "../math";
 import { BoolUpdateFlag } from "./BoolUpdateFlag";
 import { deepClone, ignoreClone } from "./clone";
 import { Engine } from "./Engine";
+import { RenderPipeline } from "./render";
 import { Shader, ShaderData, ShaderDataGroup } from "./shader";
 import { Transform } from "./Transform";
 
@@ -21,6 +22,8 @@ export class Camera {
   private _transform: Transform;
   @ignoreClone
   private _isViewMatrixDirty: BoolUpdateFlag;
+  @ignoreClone
+  _renderPipeline: RenderPipeline;
   @deepClone
   private _projectionMatrix: Matrix = new Matrix();
   @deepClone
@@ -155,6 +158,7 @@ export class Camera {
     this._engine = engine;
     this._transform = new Transform();
     this._isViewMatrixDirty = this._transform.registerWorldChangeFlag();
+    this._renderPipeline = new RenderPipeline(engine);
   }
 
   /**
@@ -173,5 +177,6 @@ export class Camera {
    */
   render(): void {
     this._updateShaderData();
+    this._renderPipeline.render();
   }
 }
