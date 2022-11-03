@@ -1,4 +1,5 @@
 import { Mesh } from "./graphic";
+import { Material } from "./material";
 import { Transform } from "./Transform";
 
 export class Entity {
@@ -14,6 +15,8 @@ export class Entity {
   name: string;
   /** Entity mesh. */
   mesh: Mesh;
+  /** Entity material. */
+  material: Material;
   /** Transform component. */
   readonly transform: Transform;
 
@@ -34,11 +37,13 @@ export class Entity {
    * An entity consists of meshes and materials.
    * @param name Entity name.
    * @param mesh Entity mesh.
+   * @param material Entity material.
    */
-  constructor(name: string, mesh: Mesh) {
+  constructor(name: string, mesh: Mesh, material: Material) {
     this.name = name;
     this.id = Entity._count++;
     this.mesh = mesh;
+    this.material = material;
     this.transform = new Transform(this);
   }
 
