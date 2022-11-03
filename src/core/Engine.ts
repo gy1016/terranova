@@ -1,18 +1,30 @@
-import { Vector3 } from "../math";
-import { Camera } from "./Camera";
+import { Time } from "./base/Time";
 import { Canvas } from "./Canvas";
 import { EngineSettings } from "./EngineSettings";
-import { PrimitiveMesh } from "./mesh";
 import { Renderer, WebGLRendererOptions } from "./render/Renderer";
+import { Scene } from "./Scene";
 import { Shader, ShaderPool, ShaderProgramPool } from "./shader";
-import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
 import { Texture2D, Texture2DArray, TextureCube } from "./texture";
 
 ShaderPool.init();
 
 export class Engine {
   private _settings: EngineSettings;
-  protected _canvas: Canvas;
+  private _canvas: Canvas;
+  private _scene: Scene;
+  private _isPaused: boolean = true;
+  private _requestId: number;
+  private _timeoutId: number;
+  private _time: Time = new Time();
+  private _animate = () => {
+    this._requestId = requestAnimationFrame(this._animate);
+    this.update();
+  };
+
+  get scene(): Scene {
+    return this._scene;
+  }
+
   _renderer: Renderer;
 
   /* @internal */
@@ -35,6 +47,20 @@ export class Engine {
     return this._settings;
   }
 
+  /**
+   * Whether the engine is paused.
+   */
+  get isPaused(): boolean {
+    return this._isPaused;
+  }
+
+  /**
+   * Get the Time class.
+   */
+  get time(): Time {
+    return this._time;
+  }
+
   constructor(
     canvas: string | HTMLCanvasElement,
     engineSettings?: EngineSettings,
@@ -49,8 +75,11 @@ export class Engine {
     const hardwareRenderer = new Renderer(webGLRendererOptions);
     hardwareRenderer.init(webCanvas);
 
+    const scene = new Scene(this);
+
     this._canvas = webCanvas;
     this._renderer = hardwareRenderer;
+    this._scene = scene;
   }
 
   /**
@@ -71,26 +100,44 @@ export class Engine {
     return pool;
   }
 
+  _render(scene: Scene) {
+    // TODO: 光照在这做scene._updateShaderData();
+    const camera = scene.camera;
+    camera.render();
+  }
+
+  update(): void {
+    // ! 可以在这个里面加一些生命周期
+    const time = this._time;
+    time.tick();
+
+    const scene = this.scene;
+    this._render(scene);
+  }
+
+  /**
+   * Pause the engine.
+   */
+  pause(): void {
+    this._isPaused = true;
+    cancelAnimationFrame(this._requestId);
+    clearTimeout(this._timeoutId);
+  }
+
+  /**
+   * Resume the engine.
+   */
+  resume(): void {
+    if (!this._isPaused) return;
+    this._isPaused = false;
+    this.time.reset();
+    this._requestId = requestAnimationFrame(this._animate);
+  }
+
   /**
    * Execution engine loop.
    */
   run(): void {
-    this._canvas.resizeByClientSize();
-    this._renderer.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-
-    const camera = new Camera(this);
-    camera.transform.position = new Vector3(10, 10, 10);
-    camera.transform.lookAt(new Vector3(0, 0, 0));
-
-    camera.render();
-
-    const cube = PrimitiveMesh.createCuboid(this);
-    const testProgram = Shader.find("test")._getShaderProgram(this, new ShaderMacroCollection());
-    testProgram.bind();
-    testProgram.uploadAll(testProgram.cameraUniformBlock, camera.shaderData);
-
-    cube._draw(testProgram, cube.subMesh);
-
-    console.log("run");
+    this.resume();
   }
 }
