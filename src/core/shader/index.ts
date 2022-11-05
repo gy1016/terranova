@@ -1,8 +1,12 @@
-export { ShaderPropertyType } from "./enums/ShaderPropertyType";
 export { Shader } from "./Shader";
 export { ShaderData } from "./ShaderData";
-export { ShaderProperty } from "./ShaderProperty";
-export { ShaderProgramPool } from "./ShaderProgramPool";
-export { ShaderProgram } from "./ShaderProgram";
+export { ShaderMacro } from "./ShaderMacro";
+export { ShaderMacroCollection } from "./ShaderMacroCollection";
 export { ShaderPool } from "./ShaderPool";
+export { ShaderProgram } from "./ShaderProgram";
+export { ShaderProgramPool } from "./ShaderProgramPool";
+export { ShaderProperty } from "./ShaderProperty";
+export { ShaderUniform } from "./ShaderUniform";
+export { ShaderUniformBlock } from "./ShaderUniformBlock";
 export { ShaderDataGroup } from "./enums/ShaderDataGroup";
+export { ShaderPropertyType } from "./enums/ShaderPropertyType";

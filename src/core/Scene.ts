@@ -35,9 +35,9 @@ export class Scene {
 
   private _initCamera(position: Vector3) {
     const engine = this.engine;
-    this._camera = new Camera(engine);
+    const camera = new Camera(engine);
 
-    const camera = this._camera;
+    this._camera = camera;
     camera.transform.position = position;
     camera.transform.lookAt(new Vector3(0, 0, 0));
   }

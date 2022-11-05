@@ -75,10 +75,10 @@ export class Engine {
     const hardwareRenderer = new Renderer(webGLRendererOptions);
     hardwareRenderer.init(webCanvas);
 
-    const scene = new Scene(this);
-
     this._canvas = webCanvas;
     this._renderer = hardwareRenderer;
+
+    const scene = new Scene(this);
     this._scene = scene;
   }
 
