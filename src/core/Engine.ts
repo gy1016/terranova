@@ -138,6 +138,7 @@ export class Engine {
    * Execution engine loop.
    */
   run(): void {
+    this.canvas.resizeByClientSize();
     this.resume();
   }
 }
