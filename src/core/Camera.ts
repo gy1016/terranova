@@ -158,7 +158,7 @@ export class Camera {
     this._engine = engine;
     this._transform = new Transform();
     this._isViewMatrixDirty = this._transform.registerWorldChangeFlag();
-    this._renderPipeline = new RenderPipeline(engine);
+    this._renderPipeline = new RenderPipeline(this);
   }
 
   /**

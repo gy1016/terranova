@@ -1,26 +1,25 @@
 import { Camera } from "../Camera";
-import { Engine } from "../Engine";
-import { Scene } from "../Scene";
 import { Shader } from "../shader";
 
 export class RenderPipeline {
-  private _scene: Scene;
-  private _engine: Engine;
   private _camera: Camera;
 
-  constructor(engine: Engine) {
-    this._engine = engine;
-    this._scene = engine.scene;
-    this._camera = engine.scene.camera;
+  constructor(camera: Camera) {
+    this._camera = camera;
   }
 
   render() {
     const compileMacros = Shader._compileMacros;
 
-    const engine = this._engine;
+    const engine = this._camera.engine;
     const camera = this._camera;
+    const scene = engine.scene;
+    const rootEntities = scene.rootEntities;
+    const renderer = engine._renderer;
+    const canvas = engine.canvas;
 
-    const rootEntities = this._scene.rootEntities;
+    renderer.viewport(0, 0, canvas.width, canvas.height);
+
     for (let i = 0; i < rootEntities.length; ++i) {
       const { mesh, material } = rootEntities[i];
 
