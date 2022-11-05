@@ -8,6 +8,7 @@ import { GLExtensions } from "./GLExtensions";
 import { GLPrimitive } from "./GLPrimitive";
 import { RenderStates } from "./RenderStates";
 import { WebGLExtension } from "./type";
+import { Vector4 } from "../../math";
 
 /**
  * WebGL mode.
@@ -40,6 +41,10 @@ export class Renderer {
 
   private _activeTextureID: number;
   private _activeTextures: Texture[] = new Array(32);
+
+  // cache value
+  private _lastViewport: Vector4 = new Vector4(null, null, null, null);
+  private _scissorEnable: boolean = false;
 
   _currentBind: ShaderProgram;
 
@@ -133,6 +138,27 @@ export class Renderer {
     if (this._activeTextures[index] !== texture) {
       this._gl.bindTexture(texture._target, texture._glTexture);
       this._activeTextures[index] = texture;
+    }
+  }
+
+  viewport(x: number, y: number, width: number, height: number): void {
+    const { _gl: gl, _lastViewport: lv } = this;
+    if (x !== lv.x || y !== lv.y || width !== lv.z || height !== lv.w) {
+      const { _canvas: webCanvas } = this;
+      if (x === 0 && y === 0 && width === webCanvas.width && height === webCanvas.height) {
+        if (this._scissorEnable) {
+          gl.disable(gl.SCISSOR_TEST);
+          this._scissorEnable = false;
+        }
+      } else {
+        if (!this._scissorEnable) {
+          gl.enable(gl.SCISSOR_TEST);
+          this._scissorEnable = true;
+        }
+        gl.scissor(x, y, width, height);
+      }
+      gl.viewport(x, y, width, height);
+      lv.set(x, y, width, height);
     }
   }
 
