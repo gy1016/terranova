@@ -73,6 +73,7 @@ export class CloneManager {
    * @param mode - Clone mode
    */
   static registerCloneMode(target: Object, propertyKey: string, mode: CloneMode): void {
+    // target为实例对象的原型
     let targetMap = CloneManager._subCloneModeMap.get(target.constructor);
     if (!targetMap) {
       targetMap = Object.create(null);

@@ -159,7 +159,7 @@ export class Camera {
 
   constructor(engine: Engine) {
     this._engine = engine;
-    this._transform = new Transform();
+    this._transform = new Transform(this);
     this._isViewMatrixDirty = this._transform.registerWorldChangeFlag();
     this._orbitControl = new OrbitControl(this);
     this._renderPipeline = new RenderPipeline(this);

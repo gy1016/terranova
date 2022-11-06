@@ -1,5 +1,6 @@
 import { MathUtil, Matrix, Matrix3x3, Quaternion, Vector3 } from "../math";
 import { BoolUpdateFlag } from "./BoolUpdateFlag";
+import { Camera } from "./Camera";
 import { deepClone, ignoreClone } from "./clone/CloneManager";
 import { Entity } from "./Entity";
 import { UpdateFlagManager } from "./UpdateFlagManager";
@@ -47,7 +48,7 @@ export class Transform {
 
   /** @internal */
   _updateFlagManager: UpdateFlagManager = new UpdateFlagManager();
-  _entity: Entity;
+  _entityOrCamera: Entity | Camera;
 
   /**
    * Local position.
@@ -289,11 +290,9 @@ export class Transform {
   /**
    * @internal
    */
-  constructor(entity?: Entity) {
+  constructor(entityOrCamera: Entity | Camera) {
     // ! 相机不需要实体
-    if (entity) {
-      this._entity = entity;
-    }
+    this._entityOrCamera = entityOrCamera;
 
     this._onPositionChanged = this._onPositionChanged.bind(this);
     this._onWorldPositionChanged = this._onWorldPositionChanged.bind(this);
@@ -570,7 +569,8 @@ export class Transform {
   private _updateWorldPositionFlag(): void {
     if (!this._isContainDirtyFlags(TransformModifyFlags.WmWp)) {
       this._worldAssociatedChange(TransformModifyFlags.WmWp);
-      const nodeChildren = this._entity.children || [];
+      if (this._entityOrCamera instanceof Camera) return;
+      const nodeChildren = this._entityOrCamera.children || [];
       for (let i: number = 0, n: number = nodeChildren.length; i < n; i++) {
         nodeChildren[i].transform?._updateWorldPositionFlag();
       }
@@ -587,7 +587,8 @@ export class Transform {
   private _updateWorldRotationFlag() {
     if (!this._isContainDirtyFlags(TransformModifyFlags.WmWeWq)) {
       this._worldAssociatedChange(TransformModifyFlags.WmWeWq);
-      const nodeChildren = this._entity.children || [];
+      if (this._entityOrCamera instanceof Camera) return;
+      const nodeChildren = this._entityOrCamera.children || [];
       for (let i: number = 0, n: number = nodeChildren.length; i < n; i++) {
         nodeChildren[i].transform?._updateWorldPositionAndRotationFlag(); // Rotation update of parent entity will trigger world position and rotation update of all child entity.
       }
@@ -604,7 +605,8 @@ export class Transform {
   private _updateWorldPositionAndRotationFlag() {
     if (!this._isContainDirtyFlags(TransformModifyFlags.WmWpWeWq)) {
       this._worldAssociatedChange(TransformModifyFlags.WmWpWeWq);
-      const nodeChildren = this._entity.children || [];
+      if (this._entityOrCamera instanceof Camera) return;
+      const nodeChildren = this._entityOrCamera.children || [];
       for (let i: number = 0, n: number = nodeChildren.length; i < n; i++) {
         nodeChildren[i].transform?._updateWorldPositionAndRotationFlag();
       }
@@ -620,7 +622,8 @@ export class Transform {
   private _updateWorldScaleFlag() {
     if (!this._isContainDirtyFlags(TransformModifyFlags.WmWs)) {
       this._worldAssociatedChange(TransformModifyFlags.WmWs);
-      const nodeChildren = this._entity.children || [];
+      if (this._entityOrCamera instanceof Camera) return;
+      const nodeChildren = this._entityOrCamera.children || [];
       for (let i: number = 0, n: number = nodeChildren.length; i < n; i++) {
         nodeChildren[i].transform?._updateWorldPositionAndScaleFlag();
       }
@@ -636,7 +639,8 @@ export class Transform {
   private _updateWorldPositionAndScaleFlag(): void {
     if (!this._isContainDirtyFlags(TransformModifyFlags.WmWpWs)) {
       this._worldAssociatedChange(TransformModifyFlags.WmWpWs);
-      const nodeChildren = this._entity.children || [];
+      if (this._entityOrCamera instanceof Camera) return;
+      const nodeChildren = this._entityOrCamera.children || [];
       for (let i: number = 0, n: number = nodeChildren.length; i < n; i++) {
         nodeChildren[i].transform?._updateWorldPositionAndScaleFlag();
       }
@@ -649,7 +653,8 @@ export class Transform {
   private _updateAllWorldFlag(): void {
     if (!this._isContainDirtyFlags(TransformModifyFlags.WmWpWeWqWs)) {
       this._worldAssociatedChange(TransformModifyFlags.WmWpWeWqWs);
-      const nodeChildren = this._entity.children || [];
+      if (this._entityOrCamera instanceof Camera) return;
+      const nodeChildren = this._entityOrCamera.children || [];
       for (let i: number = 0, n: number = nodeChildren.length; i < n; i++) {
         nodeChildren[i].transform?._updateAllWorldFlag();
       }
@@ -657,11 +662,12 @@ export class Transform {
   }
 
   private _getParentTransform(): Transform | null {
+    if (this._entityOrCamera instanceof Camera) return;
     if (!this._isParentDirty) {
       return this._parentTransformCache;
     }
     let parentCache: Transform = null;
-    let parent = this._entity?.parent;
+    let parent = this._entityOrCamera?.parent;
     while (parent) {
       const transform = parent.transform;
       if (transform) {
