@@ -46,6 +46,7 @@ export class Renderer {
   private _lastViewport: Vector4 = new Vector4(null, null, null, null);
   private _scissorEnable: boolean = false;
 
+  _readFrameBuffer: WebGLFramebuffer;
   _currentBind: ShaderProgram;
 
   get isWebGL2() {
@@ -136,7 +137,7 @@ export class Renderer {
   bindTexture(texture: Texture): void {
     const index = this._activeTextureID - this._gl.TEXTURE0;
     if (this._activeTextures[index] !== texture) {
-      this._gl.bindTexture(texture._target, texture._glTexture);
+      this._gl.bindTexture(texture._glTarget, texture._glTexture);
       this._activeTextures[index] = texture;
     }
   }
