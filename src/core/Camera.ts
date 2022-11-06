@@ -5,10 +5,13 @@ import { Engine } from "./Engine";
 import { RenderPipeline } from "./render";
 import { Shader, ShaderData, ShaderDataGroup } from "./shader";
 import { Transform } from "./Transform";
+import { OrbitControl } from "../controls";
 
 export class Camera {
   /** Shader data. */
   readonly shaderData: ShaderData = new ShaderData(ShaderDataGroup.Camera);
+
+  _orbitControl: OrbitControl;
 
   private _engine: Engine;
   private _isProjMatSetting = false;
@@ -158,6 +161,7 @@ export class Camera {
     this._engine = engine;
     this._transform = new Transform();
     this._isViewMatrixDirty = this._transform.registerWorldChangeFlag();
+    this._orbitControl = new OrbitControl(this);
     this._renderPipeline = new RenderPipeline(this);
   }
 

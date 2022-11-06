@@ -109,9 +109,12 @@ export class Engine {
   update(): void {
     // ! 可以在这个里面加一些生命周期
     const time = this._time;
+    const deltaTime = time.deltaTime;
+    const scene = this.scene;
+    scene.camera._orbitControl.onUpdate(deltaTime);
+
     time.tick();
 
-    const scene = this.scene;
     this._render(scene);
   }
 
