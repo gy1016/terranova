@@ -1,4 +1,5 @@
 import { Vector3 } from "..";
+import { Background } from "./Background";
 import { Logger } from "./base/Logger";
 import { Camera } from "./Camera";
 import { Engine } from "./Engine";
@@ -26,11 +27,18 @@ export class Scene {
     return this._rootEntities;
   }
 
+  /** The background of the scene, the default is the skybox. */
+  background: Background;
+
   constructor(engine: Engine) {
     this._engine = engine;
 
+    // 初始化场景相机
     const cameraPos = engine.setting?.cameraPos || new Vector3(10, 10, 10);
     this._initCamera(cameraPos);
+
+    // 初始化背景，即天空盒
+    this.background = new Background(this.engine);
   }
 
   private _initCamera(position: Vector3) {
