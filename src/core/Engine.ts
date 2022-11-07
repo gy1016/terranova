@@ -4,7 +4,7 @@ import { EngineSettings } from "./EngineSettings";
 import { Renderer, WebGLRendererOptions } from "./render/Renderer";
 import { Scene } from "./Scene";
 import { Shader, ShaderPool, ShaderProgramPool } from "./shader";
-import { Texture2D, Texture2DArray, TextureCube } from "./texture";
+import { Texture2D, Texture2DArray, TextureCube, TextureCubeFace } from "./texture";
 
 ShaderPool.init();
 
@@ -80,6 +80,22 @@ export class Engine {
 
     const scene = new Scene(this);
     this._scene = scene;
+
+    // 初始化一些默认纹素
+    const magentaPixel = new Uint8Array([255, 0, 255, 255]);
+    const magentaTexture2D = new Texture2D(this, 1, 1);
+    magentaTexture2D.setPixelBuffer(magentaPixel, 1, 1);
+
+    const magentaTextureCube = new TextureCube(this, 1);
+    magentaTextureCube.setPixelBuffer(TextureCubeFace.PositiveX, magentaPixel);
+    magentaTextureCube.setPixelBuffer(TextureCubeFace.NegativeX, magentaPixel);
+    magentaTextureCube.setPixelBuffer(TextureCubeFace.PositiveY, magentaPixel);
+    magentaTextureCube.setPixelBuffer(TextureCubeFace.NegativeY, magentaPixel);
+    magentaTextureCube.setPixelBuffer(TextureCubeFace.PositiveZ, magentaPixel);
+    magentaTextureCube.setPixelBuffer(TextureCubeFace.NegativeZ, magentaPixel);
+
+    this._magentaTexture2D = magentaTexture2D;
+    this._magentaTextureCube = magentaTextureCube;
   }
 
   /**
