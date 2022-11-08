@@ -82,7 +82,7 @@ export class Engine {
     this._scene = scene;
 
     // 初始化一些默认纹素
-    const magentaPixel = new Uint8Array([255, 0, 255, 255]);
+    const magentaPixel = new Uint8Array([255, 255, 255, 255]);
     const magentaTexture2D = new Texture2D(this, 1, 1);
     magentaTexture2D.setPixelBuffer(magentaPixel, 1, 1);
 

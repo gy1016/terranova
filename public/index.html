@@ -26,10 +26,15 @@
   <body>
     <canvas id="gy"> your browser not support canvas </canvas>
     <script type="module">
-      import { Engine } from "./index.esm.js";
+      import { Engine, PrimitiveMesh, Material, Shader, Entity } from "./index.esm.js";
 
-      debugger;
       const whuer3d = new Engine("gy");
+
+      const mesh = PrimitiveMesh.createCuboid(whuer3d);
+      const material = new Material(whuer3d, Shader.find("test"));
+      const entity = new Entity("cuboid", mesh, material);
+
+      whuer3d.scene.addRootEntity(entity);
       whuer3d.run();
     </script>
   </body>

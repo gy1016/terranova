@@ -37,6 +37,8 @@ export class Camera {
   private _lastAspectSize: Vector2 = new Vector2(0, 0);
 
   private static _vpMatrixProperty = Shader.getPropertyByName("u_MvpMat");
+  // 我这个逆矩阵是忽略了平移参数的，只考虑方向
+  private static _invVPMatrixProperty = Shader.getPropertyByName("u_InvVPMat");
 
   get engine() {
     return this._engine;
@@ -170,10 +172,18 @@ export class Camera {
    */
   private _updateShaderData(): void {
     const shaderData = this.shaderData;
+
     const vpMat = new Matrix();
     // 注意顺序：perspect * view * model
     Matrix.multiply(this.projectionMatrix, this.viewMatrix, vpMat);
+
+    const invVPMat = this.viewMatrix.clone();
+    (invVPMat.elements[12] = 0), (invVPMat.elements[13] = 0), (invVPMat.elements[14] = 0);
+    Matrix.multiply(this.projectionMatrix, invVPMat, invVPMat);
+    invVPMat.invert();
+
     shaderData.setMatrix(Camera._vpMatrixProperty, vpMat);
+    shaderData.setMatrix(Camera._invVPMatrixProperty, invVPMat);
   }
 
   /**

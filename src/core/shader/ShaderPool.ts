@@ -1,5 +1,5 @@
-import skyboxFs from "../shaderlib/extra/skybox.fs.glsl";
-import skyboxVs from "../shaderlib/extra/skybox.vs.glsl";
+import skyboxFs from "../shaderlib/geographic/skybox.fs.glsl";
+import skyboxVs from "../shaderlib/geographic/skybox.vs.glsl";
 import tileVs from "../shaderlib/geographic/tile.vs.glsl";
 import tileFs from "../shaderlib/geographic/tile.fs.glsl";
 import testVs from "../shaderlib/geographic/test.vs.glsl";
