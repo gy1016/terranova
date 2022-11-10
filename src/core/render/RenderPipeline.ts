@@ -28,8 +28,11 @@ export class RenderPipeline {
       const { mesh, material } = rootEntities[i];
 
       const program = material.shader._getShaderProgram(engine, compileMacros);
+
       program.bind();
       program.uploadAll(program.cameraUniformBlock, camera.shaderData);
+      program.uploadAll(program.sceneUniformBlock, scene.shaderData);
+      program.uploadAll(program.materialUniformBlock, material.shaderData);
       // TODO: 其他数据还没上传
 
       mesh._draw(program, mesh.subMesh);

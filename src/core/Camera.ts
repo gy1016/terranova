@@ -1,4 +1,4 @@
-import { MathUtil, Matrix, Vector2, Vector4 } from "../math";
+import { MathUtil, Matrix, Vector2, Vector3, Vector4 } from "../math";
 import { BoolUpdateFlag } from "./BoolUpdateFlag";
 import { deepClone, ignoreClone } from "./clone";
 import { Engine } from "./Engine";
@@ -39,6 +39,9 @@ export class Camera {
   private static _vpMatrixProperty = Shader.getPropertyByName("u_MvpMat");
   // 我这个逆矩阵是忽略了平移参数的，只考虑方向
   private static _invVPMatrixProperty = Shader.getPropertyByName("u_InvVPMat");
+  // 用于光线追踪求解射线与椭球的一元二次方程
+  private static _cameraPositionProperty = Shader.getPropertyByName("u_CameraPos");
+  private static _cameraPosSquaredProperty = Shader.getPropertyByName("u_CameraPosSquared");
 
   get engine() {
     return this._engine;
@@ -182,8 +185,14 @@ export class Camera {
     Matrix.multiply(this.projectionMatrix, invVPMat, invVPMat);
     invVPMat.invert();
 
+    const cameraPos = this.transform.worldPosition;
+    const cameraPosSquared = new Vector3();
+    Vector3.multiply(cameraPos, cameraPos, cameraPosSquared);
+
     shaderData.setMatrix(Camera._vpMatrixProperty, vpMat);
     shaderData.setMatrix(Camera._invVPMatrixProperty, invVPMat);
+    shaderData.setVector3(Camera._cameraPositionProperty, cameraPos);
+    shaderData.setVector3(Camera._cameraPosSquaredProperty, cameraPosSquared);
   }
 
   /**
