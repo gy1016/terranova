@@ -24,6 +24,14 @@ export class Ellipsoid {
     return this._oneOverRadiiSquared;
   }
 
+  get maximumRadius() {
+    return Math.max(this._radii._x, this._radii._y, this._radii._z);
+  }
+
+  get minimumRadius() {
+    return Math.min(this._radii._x, this._radii._y, this._radii._z);
+  }
+
   constructor(a: number, b: number, c: number) {
     if (a <= 0 || b <= 0 || c <= 0) {
       throw new Error("Ellipsoid parameters are not allowed to be set to less than or equal to 0.");

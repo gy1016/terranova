@@ -9,7 +9,7 @@ import { Entity } from "../core/Entity";
 export class RayCastedGlobe extends Entity {
   private static _shapeProperty: ShaderProperty = Shader.getPropertyByName("u_GlobeOneOverRadiiSquared");
 
-  private _shape: Ellipsoid = Ellipsoid.ScaledWgs84;
+  private _shape: Ellipsoid = Ellipsoid.Wgs84;
 
   /** The ellipsoid parameters corresponding to the sphere. */
   get shape() {
@@ -27,7 +27,7 @@ export class RayCastedGlobe extends Entity {
   constructor(engine: Engine) {
     super(
       "rayCastedGlobe",
-      PrimitiveMesh.createCuboid(engine, 2, 2, 2),
+      PrimitiveMesh.createCuboid(engine, 2 * 6378137.0, 2 * 6356752.314245, 2 * 6378137.0),
       new ImageMaterial(engine, Shader.find("rayCastedGlobe"), earthUrl)
     );
   }
