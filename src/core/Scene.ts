@@ -46,34 +46,37 @@ export class Scene {
   constructor(engine: Engine) {
     this._engine = engine;
 
+    // 将光追椭球推入根式体
+    this._globe = new RayCastedGlobe(engine);
+    this.globe.uploadShaderData(this.shaderData);
+    this.rootEntities.push(this._globe);
+
     // 初始化场景相机
-    const cameraPos = engine.setting?.cameraPos || new Vector3(10, 10, 10);
+    const cameraPos = engine.setting?.cameraPos || new Vector3(6378137 * 3, 0, 0);
     this._initCamera(cameraPos);
 
     // 初始化背景，即天空盒
     this.background = new Background(this.engine);
 
     // 初始化场景点光源
-    this.pointLight = new PointLight(new Vector3(10, 10, 10));
+    this.pointLight = new PointLight(engine.setting?.pointLightPos || new Vector3(6378137 * 3, 0, 0));
     this.pointLight._updateShaderData(this.shaderData);
 
     // 初始化场景环境光
     this.ambientLight = new AmbientLight(new Color(0.3, 0.3, 0.3, 1));
     this.ambientLight._updateShaderData(this.shaderData);
-
-    // 将光追椭球推入根式体
-    this._globe = new RayCastedGlobe(engine);
-    this.globe.uploadShaderData(this.shaderData);
-    this.rootEntities.push(this._globe);
   }
 
   private _initCamera(position: Vector3) {
     const engine = this.engine;
     const camera = new Camera(engine);
 
+    camera.nearClipPlane = 0.000001 * this.globe.shape.maximumRadius;
+    camera.farClipPlane = 10.0 * this.globe.shape.maximumRadius;
+
     this._camera = camera;
     camera.transform.position = position;
-    camera.transform.lookAt(new Vector3(0, 0, 0));
+    camera.transform.lookAt(new Vector3(6378137, 0, 0));
   }
 
   addRootEntity(entity: Entity): void {
