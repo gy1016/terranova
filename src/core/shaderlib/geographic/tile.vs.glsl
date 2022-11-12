@@ -1,9 +1,10 @@
-attribute vec4 a_Position;
-attribute vec2 a_Textcoord;
+attribute vec4 POSITION;
+attribute vec2 TEXCOORD_0;
+
 varying vec2 v_Textcoord;
 uniform mat4 u_MvpMatrix;
 
 void main() {
-  gl_Position = u_MvpMatrix * a_Position;
-  v_Textcoord = a_Textcoord;
+  gl_Position = u_MvpMatrix * POSITION;
+  v_Textcoord = TEXCOORD_0;
 }
