@@ -1,4 +1,4 @@
-import { skyboxConfig } from "../config";
+import { SKYBOX_CONFIG } from "../config";
 import { Color, Vector3 } from "../math";
 import { Engine } from "./Engine";
 import { BackgroundMode } from "./enums/BackgroundMode";
@@ -26,7 +26,7 @@ export class Background {
 
   constructor(private _engine: Engine) {
     this._mesh = this._createPlane(this._engine);
-    this._material = new SkyBoxMaterial(this._engine, skyboxConfig);
+    this._material = new SkyBoxMaterial(this._engine, SKYBOX_CONFIG);
   }
 
   /**

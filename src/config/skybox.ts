@@ -7,7 +7,7 @@ export enum CubeMap {
   TEXTURE_CUBE_MAP_NEGATIVE_Z,
 }
 
-export const skyboxConfig = [
+export const SKYBOX_CONFIG = [
   {
     target: CubeMap.TEXTURE_CUBE_MAP_POSITIVE_X,
     url: "http://121.199.160.202/images/skybox/tycho2t3_80_mx.jpg",
