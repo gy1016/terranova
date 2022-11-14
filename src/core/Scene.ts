@@ -1,3 +1,4 @@
+import { ArcGISLayer, TileLayer } from "../geographic";
 import { RayCastedGlobe } from "../geographic/RayCastedGlobe";
 import { Color, Vector3 } from "../math";
 import { Background } from "./Background";
@@ -23,6 +24,7 @@ export class Scene {
   ambientLight: AmbientLight;
 
   private _rootEntities: Entity[] = [];
+  private _layers: TileLayer[];
 
   get engine() {
     return this._engine;
@@ -38,6 +40,10 @@ export class Scene {
 
   get rootEntities() {
     return this._rootEntities;
+  }
+
+  get layers() {
+    return this._layers;
   }
 
   /** The background of the scene, the default is the skybox. */
@@ -65,6 +71,9 @@ export class Scene {
     // 初始化场景环境光
     this.ambientLight = new AmbientLight(new Color(0.3, 0.3, 0.3, 1));
     this.ambientLight._updateShaderData(this.shaderData);
+
+    // 初始化图层
+    this.layers.push(new ArcGISLayer(engine, 1));
   }
 
   private _initCamera(position: Vector3) {
