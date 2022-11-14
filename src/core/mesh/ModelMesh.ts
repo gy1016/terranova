@@ -404,6 +404,7 @@ export class ModelMesh extends Mesh {
         noLongerAccessible ? BufferUsage.Static : BufferUsage.Dynamic
       );
 
+      // 32位浮点是4个字节
       this._setVertexBufferBinding(0, new VertexBufferBinding(newVertexBuffer, elementCount * 4));
       this._lastUploadVertexCount = vertexCount;
     } else {
