@@ -24,7 +24,7 @@ export class Scene {
   ambientLight: AmbientLight;
 
   private _rootEntities: Entity[] = [];
-  private _layers: TileLayer[];
+  private _layers: TileLayer[] = [];
 
   get engine() {
     return this._engine;

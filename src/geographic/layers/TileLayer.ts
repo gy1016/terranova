@@ -7,7 +7,7 @@ export class TileLayer {
   protected _address: string | string[];
 
   level: number;
-  tiles: Tile[];
+  tiles: Tile[] = [];
   engine: Engine;
 
   constructor(engine: Engine, level: number, service: keyof TileServiceMap) {
@@ -20,8 +20,8 @@ export class TileLayer {
     let url: string;
     let str: string;
 
-    for (let row = 0; row < this.level; ++row) {
-      for (let col = 0; col < this.level; ++col) {
+    for (let row = 0; row < 1 << this.level; ++row) {
+      for (let col = 0; col < 1 << this.level; ++col) {
         const tile = new Tile(this.engine, this.level, row, col);
 
         if (this._address instanceof Array) {
@@ -30,8 +30,10 @@ export class TileLayer {
           str = this._address;
         }
         url = this._initTileUrl(str, tile);
+
         const material = new ImageMaterial(this.engine, Shader.find("tile"), url);
         tile.material = material;
+        this.tiles.push(tile);
       }
     }
   }
@@ -46,7 +48,7 @@ export class TileLayer {
     const res = [...str.matchAll(/(level|row|col)/gi)];
     for (let i = 0; i < res.length; ++i) {
       const key: string = res[i][0];
-      str.replace(key, tile[key]);
+      str = str.replace(key, tile[key]);
     }
     return str;
   }
