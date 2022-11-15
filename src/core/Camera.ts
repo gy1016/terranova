@@ -42,6 +42,7 @@ export class Camera {
   // 用于光线追踪求解射线与椭球的一元二次方程
   private static _cameraPositionProperty = Shader.getPropertyByName("u_CameraPos");
   private static _cameraPosSquaredProperty = Shader.getPropertyByName("u_CameraPosSquared");
+  private static _cameraFarPlaneProperty = Shader.getPropertyByName("u_Far");
 
   get engine() {
     return this._engine;
@@ -189,6 +190,7 @@ export class Camera {
     const cameraPosSquared = new Vector3();
     Vector3.multiply(cameraPos, cameraPos, cameraPosSquared);
 
+    shaderData.setFloat(Camera._cameraFarPlaneProperty, this.farClipPlane);
     shaderData.setMatrix(Camera._vpMatrixProperty, vpMat);
     shaderData.setMatrix(Camera._invVPMatrixProperty, invVPMat);
     shaderData.setVector3(Camera._cameraPositionProperty, cameraPos);
