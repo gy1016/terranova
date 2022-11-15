@@ -13,12 +13,11 @@ export class ImageMaterial extends Material {
 
   constructor(engine: Engine, shader: Shader, url: string) {
     super(engine, shader);
-    const shaderData = this.shaderData;
+
     loadImage(url)
       .then((image) => {
         this.texture2d = new Texture2D(engine, image.width, image.height, TextureFormat.R8G8B8);
         this.texture2d.setImageSource(image, true);
-        shaderData.setTexture(ImageMaterial._sampleprop, this.texture2d);
       })
       .catch((error) => {
         throw error;

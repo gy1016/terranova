@@ -60,6 +60,7 @@ export class TileLayer {
 
     for (let i = 0; i < tiles.length; ++i) {
       const { mesh, material } = tiles[i];
+      material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
       program.bind();
       program.uploadAll(program.cameraUniformBlock, camera.shaderData);

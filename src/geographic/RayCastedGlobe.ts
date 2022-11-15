@@ -38,5 +38,6 @@ export class RayCastedGlobe extends Entity {
    */
   uploadShaderData(shaderData: ShaderData): void {
     shaderData.setVector3(RayCastedGlobe._shapeProperty, this.shape.oneOverRadiiSquared);
+    this.material.shaderData.setTexture(ImageMaterial._sampleprop, (this.material as ImageMaterial).texture2d);
   }
 }
