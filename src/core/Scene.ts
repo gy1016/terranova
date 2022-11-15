@@ -54,6 +54,7 @@ export class Scene {
 
     // 将光追椭球推入根式体
     this._globe = new RayCastedGlobe(engine);
+    // TODO: 这个方法放这里不好
     this.globe.uploadShaderData(this.shaderData);
     this.rootEntities.push(this._globe);
 

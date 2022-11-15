@@ -24,18 +24,11 @@ export class RenderPipeline {
     renderer.viewport(0, 0, canvas.width, canvas.height);
 
     gl.depthFunc(gl.LESS);
-    // 渲染图层
-    for (let i = 0; i < layers.length; ++i) {
-      layers[i]._render();
-    }
-
-    // TODO: 移到场景的render方法里面
+    // TODO: 实体所属图层，应当移到图层里面，并且将这段逻辑移到场景的render方法里面
     // 渲染实体
     for (let i = 0; i < rootEntities.length; ++i) {
       const { mesh, material } = rootEntities[i];
-
       const program = material.shader._getShaderProgram(engine, compileMacros);
-
       program.bind();
       program.uploadAll(program.cameraUniformBlock, camera.shaderData);
       program.uploadAll(program.sceneUniformBlock, scene.shaderData);
@@ -43,6 +36,11 @@ export class RenderPipeline {
       // TODO: 其他数据还没上传
 
       mesh._draw(program, mesh.subMesh);
+    }
+
+    // 渲染图层
+    for (let i = 0; i < layers.length; ++i) {
+      layers[i]._render();
     }
 
     // TODO: 移到场景的render方法里面
@@ -53,6 +51,7 @@ export class RenderPipeline {
     skyboxProgram.bind();
     skyboxProgram.uploadAll(skyboxProgram.cameraUniformBlock, camera.shaderData);
     skyboxProgram.uploadAll(skyboxProgram.materialUniformBlock, _material.shaderData);
+
     _mesh._draw(skyboxProgram, _mesh.subMesh);
   }
 }
