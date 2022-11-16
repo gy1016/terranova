@@ -1,3 +1,6 @@
+import { Ellipsoid } from "../geographic";
+import { Geodetic2 } from "./Geodetic2";
+import { Geodetic3 } from "./Geodetic3";
 import { IClone } from "./IClone";
 import { ICopy } from "./ICopy";
 import { MathUtil } from "./MathUtil";
@@ -538,6 +541,33 @@ export class Vector3 implements IClone<Vector3>, ICopy<Vector3Like, Vector3> {
   transformByQuat(quaternion: Quaternion): Vector3 {
     Vector3.transformByQuat(this, quaternion, this);
     return this;
+  }
+
+  /**
+   * Convert Cartesian coordinates to geographic coordinates.
+   * @param ellipsoid Ellipsoid datum
+   * @returns Geographic coordinates
+   */
+  toGeodetic2(ellipsoid: Ellipsoid): Geodetic2 {
+    const n = MathUtil.geodeticSurfaceNormal(this, ellipsoid);
+
+    return new Geodetic2(
+      MathUtil.radianToDegree(Math.atan2(n.y, n.x)),
+      MathUtil.radianToDegree(Math.asin(n.z / n.length()))
+    );
+  }
+
+  /**
+   * Convert Cartesian coordinates to geographic coordinates (including altitude).
+   * @param ellipsoid Ellipsoid datum
+   * @returns Geographic coordinates
+   */
+  toGeodetic3(ellipsoid: Ellipsoid) {
+    const p = MathUtil.scaleToGeodeticSufrace(ellipsoid, this);
+    const h = this.clone();
+    h.subtract(p);
+    const height = Math.sign(Vector3.dot(h, this)) * h.length();
+    return new Geodetic3(this.toGeodetic2(ellipsoid), height);
   }
 
   /**

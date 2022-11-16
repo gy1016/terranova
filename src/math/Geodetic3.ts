@@ -51,17 +51,17 @@ export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3>
     return this._radLat;
   }
 
-  constructor(geodetic2: Geodetic2);
+  constructor(geodetic2: Geodetic2, height?: number);
 
-  constructor(longitude: number, latitude: number);
+  // constructor(longitude: number, latitude: number);
 
-  constructor(longitude: number, latitude: number, height: number);
+  constructor(longitude: number, latitude: number, height?: number);
 
   constructor(geodetic2OrLon: Geodetic2 | number, latitude?: number, height?: number) {
     if (geodetic2OrLon instanceof Geodetic2) {
       this.longitude = geodetic2OrLon.longitude;
       this.latitude = geodetic2OrLon.latitude;
-      this.height = 0;
+      this.height = latitude === undefined ? 0 : latitude;
     } else {
       this.longitude = geodetic2OrLon;
       this.latitude = latitude;
