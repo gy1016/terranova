@@ -128,18 +128,28 @@ export class MathUtil {
     return k.add(n.scale(height));
   }
 
+  static geodeticSurfaceNormal(geodetic: Geodetic2 | Geodetic3): Vector3;
+
+  static geodeticSurfaceNormal(vector3: Vector3, ellipsoid: Ellipsoid): Vector3;
+
   /**
    * Calculate surface normals from geodetic coordinates.
    * @param geodetic Geodetic2 or Geodetic3
    * @returns The surface normal for this geographic coordinate
    */
-  static geodeticSurfaceNormal(geodetic: Geodetic2 | Geodetic3): Vector3 {
-    const cosLat = Math.cos(geodetic.radLat);
-    return new Vector3(
-      cosLat * Math.cos(geodetic.radLon),
-      cosLat * Math.sin(geodetic.radLon),
-      Math.sin(geodetic.radLat)
-    );
+  static geodeticSurfaceNormal(geodeticOrVector3: Vector3 | Geodetic2 | Geodetic3, ellipsoid?: Ellipsoid): Vector3 {
+    let res = new Vector3();
+    if (geodeticOrVector3 instanceof Vector3) {
+      Vector3.multiply(geodeticOrVector3, ellipsoid.oneOverRadiiSquared, res);
+    } else {
+      const cosLat = Math.cos(geodeticOrVector3.radLat);
+      res = new Vector3(
+        cosLat * Math.cos(geodeticOrVector3.radLon),
+        cosLat * Math.sin(geodeticOrVector3.radLon),
+        Math.sin(geodeticOrVector3.radLat)
+      );
+    }
+    return res.normalize();
   }
 
   /**
