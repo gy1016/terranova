@@ -25,4 +25,11 @@ describe("Geodetic2 test", () => {
     expect(g6.longitude).toBeUndefined();
     expect(g6.latitude).toBeUndefined();
   });
+
+  it("geodetic2 toMercator test", () => {
+    const geo2 = new Geodetic2(45, 45);
+    const v2 = geo2.toMercator();
+    expect(v2.x).toBeCloseTo(5009377.085697311);
+    expect(v2.y).toBeCloseTo(5621521.486192066);
+  });
 });
