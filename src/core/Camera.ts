@@ -14,12 +14,14 @@ export class Camera {
   _orbitControl: OrbitControl;
 
   private _engine: Engine;
+  private _level: number = 2;
   private _isProjMatSetting = false;
   private _nearClipPlane: number = 0.1;
   private _farClipPlane: number = 100;
   private _fieldOfView: number = 45;
   private _isProjectionDirty = true;
   private _customAspectRatio: number | undefined = undefined;
+  private _lastCameraPos: Vector3 = new Vector3();
 
   @ignoreClone
   private _transform: Transform;
@@ -46,6 +48,60 @@ export class Camera {
 
   get engine() {
     return this._engine;
+  }
+
+  // ! TODO: 不能超过指定层级还没做
+  get level() {
+    const position = this.transform.position.clone();
+    const lastCameraPos = this._lastCameraPos;
+
+    if (Vector3.equals(position, lastCameraPos)) return this._level;
+    this._lastCameraPos = position.clone();
+
+    const sufracePos = MathUtil.scaleToGeodeticSufrace(this.engine.scene.globe.shape, position);
+    const h = position.subtract(sufracePos).length();
+
+    // TODO: 这个该用视锥体进行数学计算
+    // ! It's ugly but useful.
+    if (h <= 100) {
+      this._level = 19;
+    } else if (h <= 300) {
+      this._level = 18;
+    } else if (h <= 660) {
+      this._level = 17;
+    } else if (h <= 1300) {
+      this._level = 16;
+    } else if (h <= 2600) {
+      this._level = 15;
+    } else if (h <= 6400) {
+      this._level = 14;
+    } else if (h <= 13200) {
+      this._level = 13;
+    } else if (h <= 26000) {
+      this._level = 12;
+    } else if (h <= 67985) {
+      this._level = 11;
+    } else if (h <= 139780) {
+      this._level = 10;
+    } else if (h <= 250600) {
+      this._level = 9;
+    } else if (h <= 380000) {
+      this._level = 8;
+    } else if (h <= 640000) {
+      this._level = 7;
+    } else if (h <= 1280000) {
+      this._level = 6;
+    } else if (h <= 2600000) {
+      this._level = 5;
+    } else if (h <= 6100000) {
+      this._level = 4;
+    } else if (h <= 11900000) {
+      this._level = 3;
+    } else {
+      this._level = 2;
+    }
+
+    return this._level;
   }
 
   get transform() {
