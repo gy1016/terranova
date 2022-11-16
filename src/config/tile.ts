@@ -3,6 +3,8 @@ export interface TileServiceMap {
   Google: Array<string>;
 }
 
+export const TILE_SIZE = 256;
+
 export const TILE_SERVICE_MAP: TileServiceMap = {
   ArcGIS: "https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/level/row/col",
   Google: [
