@@ -1,3 +1,5 @@
+import { Vector3 } from "../../src";
+import { Ellipsoid } from "../../src/geographic";
 import { Geodetic2 } from "../../src/math/Geodetic2";
 import { Geodetic3 } from "../../src/math/Geodetic3";
 import { MathUtil } from "../../src/math/MathUtil";
@@ -35,5 +37,23 @@ describe("MathUtil test", () => {
     expect(cartesian3.x).toBeCloseTo(3199419.14506062);
     expect(cartesian3.y).toBeCloseTo(3199419.14506062);
     expect(cartesian3.z).toBeCloseTo(4494419.476);
+  });
+
+  it("scaleToGeocentricSurface test", () => {
+    const ellipsoid = Ellipsoid.Wgs84;
+    const position = new Vector3(6378137, 6378137, 6378137);
+    const res = MathUtil.scaleToGeocentricSurface(ellipsoid, position);
+    expect(res.x).toBeCloseTo(3678289.7946902825);
+    expect(res.y).toBeCloseTo(3678289.7946902825);
+    expect(res.z).toBeCloseTo(3678289.7946902825);
+  });
+
+  it("scaleToGeodeticSufrace test", () => {
+    const ellipsoid = Ellipsoid.Wgs84;
+    const position = new Vector3(6378137, 6378137, 6378137);
+    const res = MathUtil.scaleToGeodeticSufrace(ellipsoid, position);
+    expect(res.x).toBeCloseTo(3681788.7890320364);
+    expect(res.y).toBeCloseTo(3681788.7890320364);
+    expect(res.z).toBeCloseTo(3671328.760294296);
   });
 });
