@@ -78,6 +78,10 @@ export class Engine {
     this._canvas = webCanvas;
     this._renderer = hardwareRenderer;
 
+    this._initialScene();
+  }
+
+  private _initialScene() {
     const scene = new Scene(this);
     this._scene = scene;
 
@@ -116,9 +120,8 @@ export class Engine {
     return pool;
   }
 
-  _render(scene: Scene) {
-    // TODO: 光照在这做scene._updateShaderData();
-    const camera = scene.camera;
+  _render() {
+    const camera = this.scene.camera;
     camera.render();
   }
 
@@ -127,11 +130,12 @@ export class Engine {
     const time = this._time;
     const deltaTime = time.deltaTime;
     const scene = this.scene;
+    // TODO: 到时候把自动旋转去掉
     scene.camera._orbitControl.onUpdate(deltaTime);
 
     time.tick();
 
-    this._render(scene);
+    this._render();
   }
 
   /**

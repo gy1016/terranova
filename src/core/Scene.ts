@@ -16,7 +16,7 @@ export class Scene {
   protected _engine: Engine;
   protected _camera: Camera;
   /** Earth is the root entity in the scene. */
-  private readonly _globe: RayCastedGlobe;
+  private _globe: RayCastedGlobe;
 
   /** Point lights in the scene. */
   pointLight: PointLight;
@@ -52,19 +52,41 @@ export class Scene {
   constructor(engine: Engine) {
     this._engine = engine;
 
+    this._initialGlobe();
+    this._initialCamera();
+    this._initialBackground();
+    this._initialLight();
+    this._initialLayer();
+  }
+
+  private _initialGlobe() {
     // 将光追椭球推入根式体
-    this._globe = new RayCastedGlobe(engine);
-    // TODO: 这个方法放这里不好
+    this._globe = new RayCastedGlobe(this.engine);
     this.globe.uploadShaderData(this.shaderData);
+
     this.rootEntities.push(this._globe);
+  }
 
-    // 初始化场景相机
+  private _initialCamera() {
+    const engine = this.engine;
+    const camera = new Camera(engine);
     const cameraPos = engine.setting?.cameraPos || new Vector3(6378137 * 3, 0, 0);
-    this._initCamera(cameraPos);
 
+    camera.nearClipPlane = 0.000001 * this.globe.shape.maximumRadius;
+    camera.farClipPlane = 10.0 * this.globe.shape.maximumRadius;
+
+    this._camera = camera;
+    camera.transform.position = cameraPos;
+    camera.transform.lookAt(new Vector3(6378137, 0, 0));
+  }
+
+  private _initialBackground() {
     // 初始化背景，即天空盒
     this.background = new Background(this.engine);
+  }
 
+  private _initialLight() {
+    const engine = this.engine;
     // 初始化场景点光源
     this.pointLight = new PointLight(engine.setting?.pointLightPos || new Vector3(6378137 * 3, 0, 0));
     this.pointLight._updateShaderData(this.shaderData);
@@ -72,21 +94,11 @@ export class Scene {
     // 初始化场景环境光
     this.ambientLight = new AmbientLight(new Color(0.3, 0.3, 0.3, 1));
     this.ambientLight._updateShaderData(this.shaderData);
-
-    // 初始化图层
-    this.layers.push(new ArcGISLayer(engine, 1));
   }
 
-  private _initCamera(position: Vector3) {
-    const engine = this.engine;
-    const camera = new Camera(engine);
-
-    camera.nearClipPlane = 0.000001 * this.globe.shape.maximumRadius;
-    camera.farClipPlane = 10.0 * this.globe.shape.maximumRadius;
-
-    this._camera = camera;
-    camera.transform.position = position;
-    camera.transform.lookAt(new Vector3(6378137, 0, 0));
+  private _initialLayer() {
+    // 初始化图层
+    this.layers.push(new ArcGISLayer(this.engine, 1));
   }
 
   addRootEntity(entity: Entity): void {
@@ -98,4 +110,7 @@ export class Scene {
       Logger.error("input type not equal entity!");
     }
   }
+
+  // _render() {
+  // }
 }
