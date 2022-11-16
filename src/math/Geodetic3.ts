@@ -3,6 +3,8 @@ import { Geodetic2 } from "./Geodetic2";
 import { MathUtil } from "./MathUtil";
 import { IClone } from "./IClone";
 import { ICopy } from "./ICopy";
+import { Vector2 } from "./Vector2";
+import { ELLIPSOID_LONG_RADIUS } from "../config";
 
 export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3> {
   private _longitude: number;
@@ -69,6 +71,20 @@ export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3>
     }
     this._radLon = MathUtil.degreeToRadian(this.longitude);
     this._radLat = MathUtil.degreeToRadian(this.latitude);
+  }
+
+  /**
+   * Geographic coordinate system to Mercator coordinate system.
+   * @returns Mercator value
+   */
+  toMercator(): Vector2 {
+    // 弧长为 弧长 = 弧度 * 半径
+    const x = this.radLon * ELLIPSOID_LONG_RADIUS;
+    const a = Math.PI / 4 + this.radLat / 2;
+    const b = Math.tan(a);
+    const c = Math.log(b);
+    const y = ELLIPSOID_LONG_RADIUS * c;
+    return new Vector2(x, y);
   }
 
   clone(): Geodetic3 {

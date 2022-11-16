@@ -1,6 +1,8 @@
+import { Geodetic2 } from "./Geodetic2";
 import { IClone } from "./IClone";
 import { ICopy } from "./ICopy";
 import { MathUtil } from "./MathUtil";
+import { ELLIPSOID_LONG_RADIUS } from "../config";
 
 /**
  * Describes a 2D-vector.
@@ -330,6 +332,19 @@ export class Vector2 implements IClone<Vector2>, ICopy<Vector2Like, Vector2> {
     this._y *= s;
     this._onValueChanged && this._onValueChanged();
     return this;
+  }
+
+  /**
+   * Mercator Coordinate System to Geographic Coordinate System.
+   * @returns Geographic Coordinate System.
+   */
+  toGeodetic2(): Geodetic2 {
+    const radLon = this.x / ELLIPSOID_LONG_RADIUS;
+    const a = this.y / ELLIPSOID_LONG_RADIUS;
+    const b = Math.pow(Math.E, a);
+    const c = Math.atan(b);
+    const radLat = 2 * c - Math.PI / 2;
+    return new Geodetic2(MathUtil.radianToDegree(radLon), MathUtil.radianToDegree(radLat));
   }
 
   /**
