@@ -1,3 +1,4 @@
+import { Ellipsoid } from "../geographic";
 import { ELLIPSOID_LONG_RADIUS, ELLIPSOID_SHORT_RADIUS } from "../config";
 import { Extend } from "./Extend";
 import { Geodetic2 } from "./Geodetic2";
@@ -139,5 +140,85 @@ export class MathUtil {
       cosLat * Math.sin(geodetic.radLon),
       Math.sin(geodetic.radLat)
     );
+  }
+
+  /**
+   * Scales a point in a Cartesian coordinate system onto the surface of an ellipsoid according to the geocentric normal.
+   * @param ellipsoid Ellipsoid datum
+   * @param position Cartesian point
+   * @returns Ellipsoid surface point
+   */
+  static scaleToGeocentricSurface(ellipsoid: Ellipsoid, position: Vector3): Vector3 {
+    const beta =
+      1.0 /
+      Math.sqrt(
+        position.x * position.x * ellipsoid.oneOverRadiiSquared.x +
+          position.y * position.y * ellipsoid.oneOverRadiiSquared.y +
+          position.z * position.z * ellipsoid.oneOverRadiiSquared.z
+      );
+    return position.clone().scale(beta);
+  }
+
+  /**
+   * Scales a point in a Cartesian coordinate system onto the surface of an ellipsoid according to the surface normal.
+   * @param ellipsoid Ellipsoid datum
+   * @param position Cartesian point
+   * @returns Ellipsoid surface point
+   */
+  static scaleToGeodeticSufrace(ellipsoid: Ellipsoid, position: Vector3): Vector3 {
+    const beta =
+      1.0 /
+      Math.sqrt(
+        position.x * position.x * ellipsoid.oneOverRadiiSquared.x +
+          position.y * position.y * ellipsoid.oneOverRadiiSquared.y +
+          position.z * position.z * ellipsoid.oneOverRadiiSquared.z
+      );
+    const n = new Vector3(
+      beta * position.x * ellipsoid.oneOverRadiiSquared.x,
+      beta * position.y * ellipsoid.oneOverRadiiSquared.y,
+      beta * position.z * ellipsoid.oneOverRadiiSquared.z
+    ).length();
+    let alpha = (1.0 - beta) * (position.length() / n);
+
+    const x2 = position.x * position.x;
+    const y2 = position.y * position.y;
+    const z2 = position.z * position.z;
+
+    let da = 0.0;
+    let db = 0.0;
+    let dc = 0.0;
+
+    let s = 0.0;
+    let dSdA = 1.0;
+
+    do {
+      alpha -= s / dSdA;
+
+      da = 1.0 + alpha * ellipsoid.oneOverRadiiSquared.x;
+      db = 1.0 + alpha * ellipsoid.oneOverRadiiSquared.y;
+      dc = 1.0 + alpha * ellipsoid.oneOverRadiiSquared.z;
+
+      const da2 = da * da;
+      const db2 = db * db;
+      const dc2 = dc * dc;
+
+      const da3 = da * da2;
+      const db3 = db * db2;
+      const dc3 = dc * dc2;
+
+      s =
+        x2 / (ellipsoid.radiiSquared.x * da2) +
+        y2 / (ellipsoid.radiiSquared.y * db2) +
+        z2 / (ellipsoid.radiiSquared.z * dc2) -
+        1.0;
+
+      dSdA =
+        -2.0 *
+        (x2 / (ellipsoid.radiiToTheFourth.x * da3) +
+          y2 / (ellipsoid.radiiToTheFourth.y * db3) +
+          z2 / (ellipsoid.radiiToTheFourth.z * dc3));
+    } while (Math.abs(s) > 1e-10);
+
+    return new Vector3(position.x / da, position.y / db, position.z / dc);
   }
 }
