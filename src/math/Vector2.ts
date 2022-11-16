@@ -339,6 +339,7 @@ export class Vector2 implements IClone<Vector2>, ICopy<Vector2Like, Vector2> {
    * @returns Geographic Coordinate System.
    */
   toGeodetic2(): Geodetic2 {
+    // TODO: 这里应该传入一个椭球
     const radLon = this.x / ELLIPSOID_LONG_RADIUS;
     const a = this.y / ELLIPSOID_LONG_RADIUS;
     const b = Math.pow(Math.E, a);

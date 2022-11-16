@@ -4,7 +4,9 @@ import { MathUtil } from "./MathUtil";
 import { IClone } from "./IClone";
 import { ICopy } from "./ICopy";
 import { Vector2 } from "./Vector2";
+import { Vector3 } from "./Vector3";
 import { ELLIPSOID_LONG_RADIUS } from "../config";
+import { Ellipsoid } from "../geographic";
 
 export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3> {
   private _longitude: number;
@@ -85,6 +87,24 @@ export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3>
     const c = Math.log(b);
     const y = ELLIPSOID_LONG_RADIUS * c;
     return new Vector2(x, y);
+  }
+
+  /**
+   * Convert three-dimensional geographic coordinates to Cartesian coordinate system.
+   * @param ellipsoid Ellipsoid datum
+   * @returns Cartesian coordinates
+   */
+  toCartesian(ellipsoid: Ellipsoid): Vector3 {
+    const height = this.height;
+    const n = MathUtil.geodeticSurfaceNormal(this);
+    const radiiSquared = ellipsoid.radiiSquared;
+    const k = new Vector3();
+
+    Vector3.multiply(radiiSquared, n, k);
+    const gamma = Math.sqrt(k.x * n.x + k.y * n.y + k.z * n.z);
+    k.scale(1 / gamma);
+
+    return k.add(n.scale(height));
   }
 
   clone(): Geodetic3 {
