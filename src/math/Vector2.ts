@@ -2,7 +2,7 @@ import { Geodetic2 } from "./Geodetic2";
 import { IClone } from "./IClone";
 import { ICopy } from "./ICopy";
 import { MathUtil } from "./MathUtil";
-import { ELLIPSOID_LONG_RADIUS } from "../config";
+import { Ellipsoid } from "../geographic";
 
 /**
  * Describes a 2D-vector.
@@ -338,10 +338,10 @@ export class Vector2 implements IClone<Vector2>, ICopy<Vector2Like, Vector2> {
    * Mercator Coordinate System to Geographic Coordinate System.
    * @returns Geographic Coordinate System.
    */
-  toGeodetic2(): Geodetic2 {
+  toGeodetic2(ellipsoid: Ellipsoid): Geodetic2 {
     // TODO: 这里应该传入一个椭球
-    const radLon = this.x / ELLIPSOID_LONG_RADIUS;
-    const a = this.y / ELLIPSOID_LONG_RADIUS;
+    const radLon = this.x / ellipsoid.maximumRadius;
+    const a = this.y / ellipsoid.maximumRadius;
     const b = Math.pow(Math.E, a);
     const c = Math.atan(b);
     const radLat = 2 * c - Math.PI / 2;
