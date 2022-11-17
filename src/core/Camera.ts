@@ -6,6 +6,7 @@ import { RenderPipeline } from "./render";
 import { Shader, ShaderData, ShaderDataGroup } from "./shader";
 import { Transform } from "./Transform";
 import { OrbitControl } from "../controls";
+import { Ellipsoid } from "../geographic";
 
 export class Camera {
   /** Shader data. */
@@ -33,6 +34,8 @@ export class Camera {
   private _projectionMatrix: Matrix = new Matrix();
   @deepClone
   private _viewMatrix: Matrix = new Matrix();
+  @deepClone
+  private _mvpMatrix: Matrix = new Matrix();
   @deepClone
   private _viewport: Vector4 = new Vector4(0, 0, 1, 1);
   @deepClone
@@ -219,6 +222,12 @@ export class Camera {
     return this._projectionMatrix;
   }
 
+  get mvpMatrix(): Matrix {
+    // ! 这里没有乘模型矩阵
+    Matrix.multiply(this.projectionMatrix, this.viewMatrix, this._mvpMatrix);
+    return this._mvpMatrix;
+  }
+
   constructor(engine: Engine) {
     this._engine = engine;
     this._transform = new Transform(this);
@@ -251,6 +260,50 @@ export class Camera {
     shaderData.setMatrix(Camera._invVPMatrixProperty, invVPMat);
     shaderData.setVector3(Camera._cameraPositionProperty, cameraPos);
     shaderData.setVector3(Camera._cameraPosSquaredProperty, cameraPosSquared);
+  }
+
+  /**
+   * Convert world coordinates to NDC coordinates.
+   * @param cartesian World coordinates in Cartesian coordinate system
+   * @returns NDC coordinates
+   */
+  cartesianToNDC(cartesian: Vector3): Vector3 {
+    const p = new Vector4(cartesian.x, cartesian.y, cartesian.z, 1);
+    const res = this.mvpMatrix.multiplyVector4(p);
+    const w = res.w;
+    return new Vector3(res.x / w, res.y / w, res.z / w);
+  }
+
+  /**
+   * Determine whether it is visible based on the tile coordinates and its corresponding NDC coordinates.
+   * @param world The world coordinates of the point to be determined
+   * @param ndcPos NDC coordinates of the point to be determined
+   * @returns Is it visible
+   */
+  isWorldVisibleInDevice(world: Vector3, ndcPos: Vector3): boolean {
+    const cameraPos = this.transform.worldPosition;
+    const cameraPosSquared = cameraPos.clone().multiply(cameraPos);
+    const normalDir = world.clone().subtract(cameraPos).normalize();
+
+    const i = MathUtil.rayIntersectEllipsoid(
+      cameraPos,
+      cameraPosSquared,
+      normalDir,
+      Ellipsoid.Wgs84.oneOverRadiiSquared
+    );
+
+    if (i.intersects) {
+      const pickVertice = cameraPos.clone().add(normalDir.scale(i.near));
+      const length2Vertice = cameraPos.clone().subtract(world).length();
+      const length2Pick = cameraPos.clone().subtract(pickVertice).length();
+      // 首先确定这个点在正面
+      if (length2Vertice < length2Pick + 5) {
+        const res = ndcPos.x >= -1 && ndcPos.x <= 1 && ndcPos.y >= -1 && ndcPos.y <= 1;
+        return res;
+      }
+    }
+
+    return false;
   }
 
   /**
