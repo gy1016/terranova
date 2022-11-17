@@ -1,3 +1,4 @@
+import { Ellipsoid } from "../../src/geographic";
 import { Geodetic2 } from "../../src/math/Geodetic2";
 
 describe("Geodetic2 test", () => {
@@ -31,5 +32,13 @@ describe("Geodetic2 test", () => {
     const v2 = geo2.toMercator();
     expect(v2.x).toBeCloseTo(5009377.085697311);
     expect(v2.y).toBeCloseTo(5621521.486192066);
+  });
+
+  it("geodetic2 toCartesian test", () => {
+    const geo2 = new Geodetic2(45, 45);
+    const cartesian2 = geo2.toCartesian(Ellipsoid.Wgs84);
+    expect(cartesian2.x).toBeCloseTo(3194419.145);
+    expect(cartesian2.y).toBeCloseTo(3194419.145);
+    expect(cartesian2.z).toBeCloseTo(4487348.408);
   });
 });
