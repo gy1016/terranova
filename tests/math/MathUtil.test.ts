@@ -20,4 +20,16 @@ describe("MathUtil test", () => {
     expect(res.y).toBeCloseTo(3681788.7890320364);
     expect(res.z).toBeCloseTo(3671328.760294296);
   });
+
+  it("rayIntersectEllipsoid test", () => {
+    const res = MathUtil.rayIntersectEllipsoid(
+      new Vector3(6378137, 6378137, 6378137),
+      new Vector3(6378137 ** 2, 6378137 ** 2, 6378137 ** 2),
+      new Vector3(0, -6378137, -6378137).normalize(),
+      Ellipsoid.Wgs84.oneOverRadiiSquared
+    );
+    expect(res.intersects).toBe(true);
+    expect(res.near).toBe(9020047.746221097);
+    expect(res.far).toBe(9020047.949926192);
+  });
 });

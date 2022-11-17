@@ -3,6 +3,12 @@ import { Geodetic2 } from "./Geodetic2";
 import { Geodetic3 } from "./Geodetic3";
 import { Vector3 } from "./Vector3";
 
+interface RayIntersect {
+  intersects: boolean;
+  near: number;
+  far: number;
+}
+
 /**
  * Common utility methods for math operations.
  */
@@ -165,5 +171,51 @@ export class MathUtil {
     } while (Math.abs(s) > 1e-10);
 
     return new Vector3(position.x / da, position.y / db, position.z / dc);
+  }
+
+  /**
+   * Using ray tracing to find the intersection point of ray and ellipsoid.
+   * @param rayOrigin The ray origin position
+   * @param rayOriginSquared The ray origin position squared
+   * @param rayDirection The ray direction and need to normal
+   * @param oneOverEllipsoidRadiiSquared The inverse of the square of the radius of the ellipsoid
+   * @returns Intersection information
+   */
+  static rayIntersectEllipsoid(
+    rayOrigin: Vector3,
+    rayOriginSquared: Vector3,
+    rayDirection: Vector3,
+    oneOverEllipsoidRadiiSquared: Vector3
+  ): RayIntersect {
+    const tmp1 = new Vector3();
+    Vector3.multiply(rayDirection, rayDirection, tmp1);
+    const tmp2 = new Vector3();
+    Vector3.multiply(rayOrigin, rayDirection, tmp2);
+    const a = Vector3.dot(tmp1, oneOverEllipsoidRadiiSquared);
+    const b = 2.0 * Vector3.dot(tmp2, oneOverEllipsoidRadiiSquared);
+    const c = Vector3.dot(rayOriginSquared, oneOverEllipsoidRadiiSquared) - 1.0;
+    const discriminant = b * b - 4.0 * a * c;
+    if (discriminant < 0.0) {
+      return {
+        intersects: false,
+        near: 0.0,
+        far: 0.0,
+      };
+    } else if (discriminant == 0.0) {
+      const time = (-0.5 * b) / a;
+      return {
+        intersects: true,
+        near: time,
+        far: time,
+      };
+    }
+    const t = -0.5 * (b + (b > 0.0 ? 1.0 : -1.0) * Math.sqrt(discriminant));
+    const root1 = t / a;
+    const root2 = c / t;
+    return {
+      intersects: true,
+      near: Math.min(root1, root2),
+      far: Math.max(root1, root2),
+    };
   }
 }
