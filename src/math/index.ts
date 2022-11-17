@@ -9,4 +9,4 @@ export { MathUtil } from "./MathUtil";
 export { BoundingBox } from "./BoundingBox";
 export { Geodetic2 } from "./Geodetic2";
 export { Geodetic3 } from "./Geodetic3";
-export { Extend } from "./Extend";
+export { Extension } from "./Extension";

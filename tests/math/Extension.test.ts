@@ -1,11 +1,11 @@
-import { Extend } from "../../src/math/Extend";
+import { Extension } from "../../src/math/Extension";
 import { Vector2 } from "../../src/math/Vector2";
 
-describe("Extend test", () => {
+describe("Extension test", () => {
   it("extend constructor", () => {
     const min = new Vector2(-1, -2);
     const max = new Vector2(3, 4);
-    const e = new Extend(min, max);
+    const e = new Extension(min, max);
 
     expect(e.min.x).toBe(-1);
     expect(e.min.y).toBe(-2);
@@ -16,11 +16,11 @@ describe("Extend test", () => {
   it("extend copy", () => {
     const min = new Vector2(-1, -2);
     const max = new Vector2(3, 4);
-    const e1 = new Extend(min, max);
+    const e1 = new Extension(min, max);
     const e2 = e1.clone();
     min.x = -5;
     min.y = -5;
-    e1.copyFrom(new Extend(min, max));
+    e1.copyFrom(new Extension(min, max));
 
     expect(e2.min.x).toBe(-1);
     expect(e2.min.y).toBe(-2);

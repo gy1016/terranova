@@ -45,7 +45,7 @@ export class Geodetic2 implements IClone<Geodetic2>, ICopy<Geodetic2, Geodetic2>
     return this._radLat;
   }
 
-  constructor(longitude: number, latitude: number) {
+  constructor(longitude: number = 0, latitude: number = 0) {
     this.longitude = longitude;
     this.latitude = latitude;
     this._radLon = MathUtil.degreeToRadian(longitude);
