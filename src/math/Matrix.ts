@@ -4,6 +4,7 @@ import { MathUtil } from "./MathUtil";
 import { Matrix3x3 } from "./Matrix3x3";
 import { Quaternion } from "./Quaternion";
 import { Vector3 } from "./Vector3";
+import { Vector4 } from "./Vector4";
 
 /**
  * Represents a 4x4 mathematical matrix.
@@ -754,6 +755,23 @@ export class Matrix implements IClone<Matrix>, ICopy<Matrix, Matrix> {
   }
 
   /**
+   * Matrix multiplies a 4D vector and returns a new 4D vector.
+   * @param m The matrix
+   * @param p The given vector4
+   * @returns The result vector4
+   */
+  static multiplyVector4(m: Matrix, p: Vector4): Vector4 {
+    const e = m.elements;
+    const res = new Vector4();
+    res.x = p.x * e[0] + p.y * e[4] + p.z * e[8] + p.w * e[12];
+    res.y = p.x * e[1] + p.y * e[5] + p.z * e[9] + p.w * e[13];
+    res.z = p.x * e[2] + p.y * e[6] + p.z * e[10] + p.w * e[14];
+    res.w = p.x * e[3] + p.y * e[7] + p.z * e[11] + p.w * e[15];
+
+    return res;
+  }
+
+  /**
    * An array containing the elements of the matrix (column matrix).
    * @remarks
    * elements[0] first column and first row value m11
@@ -1155,6 +1173,15 @@ export class Matrix implements IClone<Matrix>, ICopy<Matrix, Matrix> {
   transpose(): Matrix {
     Matrix.transpose(this, this);
     return this;
+  }
+
+  /**
+   * Matrix multiplies a 4D vector and returns a new 4D vector.
+   * @param p The given vector4
+   * @returns The result vector4
+   */
+  multiplyVector4(p: Vector4): Vector4 {
+    return Matrix.multiplyVector4(this, p);
   }
 
   /**
