@@ -3,14 +3,6 @@ import { Ellipsoid } from "../../src/geographic";
 import { MathUtil } from "../../src/math/MathUtil";
 
 describe("MathUtil test", () => {
-  it("gridToWebMercator test", () => {
-    const extend = MathUtil.gridToWebMercator(1, 0, 0);
-    expect(extend.min.x).toBe(-Math.PI * 6378137.0);
-    expect(extend.min.y).toBe(0);
-    expect(extend.max.x).toBe(0);
-    expect(extend.max.y).toBe(Math.PI * 6378137.0);
-  });
-
   it("scaleToGeocentricSurface test", () => {
     const ellipsoid = Ellipsoid.Wgs84;
     const position = new Vector3(6378137, 6378137, 6378137);
