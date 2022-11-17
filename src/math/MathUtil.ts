@@ -1,9 +1,6 @@
 import { Ellipsoid } from "../geographic";
-import { ELLIPSOID_LONG_RADIUS } from "../config";
-import { Extend } from "./Extend";
 import { Geodetic2 } from "./Geodetic2";
 import { Geodetic3 } from "./Geodetic3";
-import { Vector2 } from "./Vector2";
 import { Vector3 } from "./Vector3";
 
 /**
@@ -64,25 +61,6 @@ export class MathUtil {
    */
   static degreeToRadian(d: number): number {
     return d * MathUtil.degreeToRadFactor;
-  }
-
-  /**
-   * According the tile row and column get the web mercator extend.
-   * @param level LOD tile level
-   * @param row Tile row
-   * @param col Tile column
-   * @returns The tile extend
-   */
-  static gridToWebMercator(level: number, row: number, col: number) {
-    const k = Math.PI * ELLIPSOID_LONG_RADIUS;
-    const size = (2 * k) / Math.pow(2, level);
-    const minX = -k + col * size;
-    const maxX = minX + size;
-    const maxY = k - row * size;
-    const minY = maxY - size;
-    const min = new Vector2(minX, minY);
-    const max = new Vector2(maxX, maxY);
-    return new Extend(min, max);
   }
 
   static geodeticSurfaceNormal(geodetic: Geodetic2 | Geodetic3): Vector3;
