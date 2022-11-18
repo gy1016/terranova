@@ -176,4 +176,39 @@ export class Tile {
     const maxGeo = extend.min.toGeodetic2(Ellipsoid.Wgs84);
     return new GeoExtension(minGeo, maxGeo);
   }
+
+  /**
+   * According to the input tile and position information, get the row and column numbers of its adjacent tiles.
+   * @param level LOD tile level
+   * @param row Tile row
+   * @param col Tile column
+   * @param position
+   * @returns Sibling tiles of the input tile
+   */
+  static getTileGridByBrother(
+    level: number,
+    row: number,
+    col: number,
+    position: "left" | "right" | "top" | "bottom"
+  ): TileCoord {
+    const maxSize = 1 << level;
+    let newRow = row;
+    let newCol = col;
+    // TODO: 用取余数可以优化
+    if (position == "left") {
+      newCol = col === 0 ? maxSize - 1 : col - 1;
+    } else if (position == "right") {
+      newCol = col === maxSize - 1 ? 0 : col + 1;
+    } else if (position == "top") {
+      newRow = row === 0 ? maxSize - 1 : row - 1;
+    } else if (position == "bottom") {
+      newRow = row === maxSize - 1 ? 0 : row + 1;
+    } else {
+      throw "invalid position";
+    }
+    return {
+      row: newRow,
+      col: newCol,
+    };
+  }
 }
