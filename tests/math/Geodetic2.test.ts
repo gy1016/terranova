@@ -9,6 +9,9 @@ describe("Geodetic2 test", () => {
     const g2 = new Geodetic2(90, 90);
     expect(g2.radLon).toEqual(Math.PI / 2);
     expect(g2.radLat).toEqual(Math.PI / 2);
+    const g3 = new Geodetic2(180.000000000003, 90);
+    expect(g3.longitude).toBeCloseTo(180);
+    expect(g3.latitude).toBe(90);
   });
 
   it("geodetic2 clone and copy", () => {

@@ -18,10 +18,11 @@ export class Geodetic2 implements IClone<Geodetic2>, ICopy<Geodetic2, Geodetic2>
   }
 
   set longitude(value: number) {
-    if (value + 180 < MathUtil.zeroTolerance || value - 180 > MathUtil.zeroTolerance) {
+    if (value < -180 - MathUtil.zeroTolerance || value > 180 + MathUtil.zeroTolerance) {
       Logger.error("Longitude between -180 and 180 degreed.");
       return;
     }
+
     this._longitude = value;
   }
 
@@ -30,7 +31,7 @@ export class Geodetic2 implements IClone<Geodetic2>, ICopy<Geodetic2, Geodetic2>
   }
 
   set latitude(value: number) {
-    if (value + 90 < MathUtil.zeroTolerance || value - 90 > MathUtil.zeroTolerance) {
+    if (value < -90 - MathUtil.zeroTolerance || value > 90 + MathUtil.zeroTolerance) {
       Logger.error("Latitude between -90 and 90 degreed.");
       return;
     }
