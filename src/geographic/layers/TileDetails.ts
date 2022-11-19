@@ -23,15 +23,14 @@ export class TileDetails {
   height: number;
   area: number;
 
-  constructor(camera: Camera, tile: Tile) {
-    this._initCornerCoord(camera, tile);
+  constructor(camera: Camera, level: number, row: number, col: number) {
+    this._initCornerCoord(camera, level, row, col);
     this._initCornerArea(camera);
   }
 
-  _initCornerCoord(camera: Camera, tile: Tile) {
+  _initCornerCoord(camera: Camera, level: number, row: number, col: number) {
     const cornerArray = [this.lt, this.lb, this.rt, this.rb];
 
-    const { level, row, col } = tile;
     const geoExtension = Tile.getTileGeodeticByGrid(level, row, col);
     this.geoExtension = geoExtension;
     this.lb.geodetic2 = new Geodetic2(geoExtension.min.longitude, geoExtension.min.latitude);
