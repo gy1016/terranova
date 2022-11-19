@@ -51,12 +51,6 @@ export class Scene {
 
   constructor(engine: Engine) {
     this._engine = engine;
-
-    this._initialGlobe();
-    this._initialCamera();
-    this._initialBackground();
-    this._initialLight();
-    this._initialLayer();
   }
 
   private _initialGlobe() {
@@ -111,6 +105,11 @@ export class Scene {
     }
   }
 
-  // _render() {
-  // }
+  _initial() {
+    this._initialGlobe();
+    this._initialCamera();
+    this._initialBackground();
+    this._initialLight();
+    this._initialLayer();
+  }
 }
