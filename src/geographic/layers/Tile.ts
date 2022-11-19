@@ -20,6 +20,8 @@ export class Tile {
   col: number;
   // 墨卡托范围
   extend: Extension;
+  // TODO: uniqueKey字符串效率比较低，待优化
+  key: string;
 
   private _segment: number;
 
@@ -28,6 +30,7 @@ export class Tile {
     this.level = level;
     this.row = row;
     this.col = col;
+    this.key = `_${level}_${row}_${col}_`;
     this._segment = this.level < 6 ? 1 << (6 - this.level) : 1;
     this.extend = Tile.gridToWebMercator(this.level, this.row, this.col);
 
