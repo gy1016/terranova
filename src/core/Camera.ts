@@ -65,7 +65,7 @@ export class Camera {
     const h = position.subtract(sufracePos).length();
 
     // TODO: 这个该用视锥体进行数学计算
-    // ! It's ugly but useful.
+    // ! It's ugly but useful!
     if (h <= 100) {
       this._level = 19;
     } else if (h <= 300) {
@@ -223,8 +223,10 @@ export class Camera {
   }
 
   get mvpMatrix(): Matrix {
-    // ! 这里没有乘模型矩阵
+    // ! 这里乘了一个将地理坐标系模型转换到右手坐标系的变换矩阵
+    const geoModelMatrix = new Matrix(0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1);
     Matrix.multiply(this.projectionMatrix, this.viewMatrix, this._mvpMatrix);
+    this._mvpMatrix.multiply(geoModelMatrix);
     return this._mvpMatrix;
   }
 
@@ -281,7 +283,7 @@ export class Camera {
    * @returns Is it visible
    */
   isWorldVisibleInDevice(world: Vector3, ndcPos: Vector3): boolean {
-    const cameraPos = this.transform.worldPosition;
+    const cameraPos = MathUtil.rightToGeographic(this.transform.worldPosition);
     const cameraPosSquared = cameraPos.clone().multiply(cameraPos);
     const normalDir = world.clone().subtract(cameraPos).normalize();
 
