@@ -132,8 +132,8 @@ export class Tile {
    * @returns The tile of col and row.
    */
   static getTileRowAndCol(x: number, y: number, level: number): TileCoord {
-    const newX = x + ELLIPSOID_LONG_RADIUS / 2;
-    const newY = ELLIPSOID_LONG_RADIUS / 2 - y;
+    const newX = x + (2 * Math.PI * ELLIPSOID_LONG_RADIUS) / 2;
+    const newY = (2 * Math.PI * ELLIPSOID_LONG_RADIUS) / 2 - y;
     const resolution = Tile.getResolution(level);
     const col = Math.floor(newX / resolution / TILE_SIZE);
     const row = Math.floor(newY / resolution / TILE_SIZE);
