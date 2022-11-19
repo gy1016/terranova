@@ -218,4 +218,13 @@ export class MathUtil {
       far: Math.max(root1, root2),
     };
   }
+
+  /**
+   * Points in the right-hand coordinate system are transferred to the geographic coordinate system.
+   * @param position Points in the right-hand coordinate system
+   * @returns Coordinates in geographic coordinate system
+   */
+  static rightToGeographic(position: Vector3) {
+    return new Vector3(position.z, position.x, position.y);
+  }
 }
