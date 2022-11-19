@@ -42,7 +42,7 @@ export class RenderPipeline {
 
     // 渲染图层
     for (let i = 0; i < layers.length; ++i) {
-      layers[i]._render();
+      layers[i]._render(camera.level);
     }
 
     // TODO: 移到场景的render方法里面

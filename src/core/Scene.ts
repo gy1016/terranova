@@ -64,7 +64,7 @@ export class Scene {
   private _initialCamera() {
     const engine = this.engine;
     const camera = new Camera(engine);
-    const cameraPos = engine.setting?.cameraPos || new Vector3(6378137 * 3, 0, 0);
+    const cameraPos = engine.setting?.cameraPos || new Vector3(0, 0, 6378137 * 3);
 
     camera.nearClipPlane = 0.000001 * this.globe.shape.maximumRadius;
     camera.farClipPlane = 10.0 * this.globe.shape.maximumRadius;
@@ -82,7 +82,7 @@ export class Scene {
   private _initialLight() {
     const engine = this.engine;
     // 初始化场景点光源
-    this.pointLight = new PointLight(engine.setting?.pointLightPos || new Vector3(6378137 * 3, 0, 0));
+    this.pointLight = new PointLight(engine.setting?.pointLightPos || new Vector3(0, 0, 6378137 * 3));
     this.pointLight._updateShaderData(this.shaderData);
 
     // 初始化场景环境光
@@ -92,7 +92,7 @@ export class Scene {
 
   private _initialLayer() {
     // 初始化图层
-    this.layers.push(new ArcGISLayer(this.engine, 1));
+    this.layers.push(new ArcGISLayer(this.engine, 2));
   }
 
   addRootEntity(entity: Entity): void {
