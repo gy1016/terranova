@@ -76,8 +76,8 @@ export class Engine {
     hardwareRenderer.init(webCanvas);
 
     this._canvas = webCanvas;
+    this.canvas.resizeByClientSize();
     this._renderer = hardwareRenderer;
-
     this._initialScene();
   }
 
@@ -100,6 +100,8 @@ export class Engine {
 
     this._magentaTexture2D = magentaTexture2D;
     this._magentaTextureCube = magentaTextureCube;
+
+    scene._initial();
   }
 
   /**
@@ -161,7 +163,6 @@ export class Engine {
    * Execution engine loop.
    */
   run(): void {
-    this.canvas.resizeByClientSize();
     this.resume();
   }
 }
