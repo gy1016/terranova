@@ -173,7 +173,7 @@ export class Tile {
     // TODO: 可以优化，每个瓦片已经含有这个属性了
     const extend = Tile.gridToWebMercator(level, row, col);
     const minGeo = extend.min.toGeodetic2(Ellipsoid.Wgs84);
-    const maxGeo = extend.min.toGeodetic2(Ellipsoid.Wgs84);
+    const maxGeo = extend.max.toGeodetic2(Ellipsoid.Wgs84);
     return new GeoExtension(minGeo, maxGeo);
   }
 
