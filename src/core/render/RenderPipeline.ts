@@ -1,4 +1,5 @@
 import { Camera } from "../Camera";
+import { ImageMaterial } from "../material";
 import { Shader } from "../shader";
 
 export class RenderPipeline {
@@ -28,6 +29,7 @@ export class RenderPipeline {
     // 渲染实体
     for (let i = 0; i < rootEntities.length; ++i) {
       const { mesh, material } = rootEntities[i];
+      material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, compileMacros);
       program.bind();
       program.uploadAll(program.cameraUniformBlock, camera.shaderData);
