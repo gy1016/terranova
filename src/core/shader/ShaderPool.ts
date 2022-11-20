@@ -1,3 +1,5 @@
+import atmosphereVs from "../shaderlib/geographic/atmosphere.vs.glsl";
+import atmosphereFs from "../shaderlib/geographic/atmosphere.fs.glsl";
 import skyboxVs from "../shaderlib/geographic/skybox.vs.glsl";
 import skyboxFs from "../shaderlib/geographic/skybox.fs.glsl";
 import rayCastedGlobeVs from "../shaderlib/geographic/rayCastedGlobe.vs.glsl";
@@ -14,6 +16,7 @@ import { Shader } from "./Shader";
  */
 export class ShaderPool {
   static init(): void {
+    Shader.create("atmosphere", atmosphereVs, atmosphereFs);
     Shader.create("skybox", skyboxVs, skyboxFs);
     Shader.create("rayCastedGlobe", rayCastedGlobeVs, rayCastedGlobeFs);
     Shader.create("tile", tileVs, tileFs);
