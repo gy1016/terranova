@@ -1,4 +1,4 @@
-import { ArcGISLayer, TileLayer } from "../geographic";
+import { GoogleLayer, TileLayer } from "../geographic";
 import { RayCastedGlobe } from "../geographic/RayCastedGlobe";
 import { Color, Vector3 } from "../math";
 import { Background } from "./Background";
@@ -92,7 +92,8 @@ export class Scene {
 
   private _initialLayer() {
     // 初始化图层
-    this.layers.push(new ArcGISLayer(this.engine, 2));
+    // this.layers.push(new ArcGISLayer(this.engine, 2));
+    this.layers.push(new GoogleLayer(this.engine, 2));
   }
 
   addRootEntity(entity: Entity): void {
