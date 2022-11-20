@@ -6,6 +6,7 @@ import { Mesh } from "./graphic";
 import { Material } from "./material";
 import { SkyBoxMaterial } from "./material/SkyBoxMaterial";
 import { ModelMesh } from "./mesh";
+import { Shader } from "./shader";
 
 /**
  * Background of the scene.
@@ -51,5 +52,19 @@ export class Background {
     mesh.uploadData(false);
     mesh.addSubMesh(0, 6);
     return mesh;
+  }
+
+  _render() {
+    const camera = this._engine.scene.camera;
+
+    const gl = this._engine._renderer.gl;
+    gl.depthFunc(gl.LEQUAL);
+    const { _mesh, _material } = this;
+    const skyboxProgram = _material.shader._getShaderProgram(this._engine, Shader._compileMacros);
+    skyboxProgram.bind();
+    skyboxProgram.uploadAll(skyboxProgram.cameraUniformBlock, camera.shaderData);
+    skyboxProgram.uploadAll(skyboxProgram.materialUniformBlock, _material.shaderData);
+
+    _mesh._draw(skyboxProgram, _mesh.subMesh);
   }
 }

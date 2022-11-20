@@ -11,13 +11,13 @@ export class Atmosphere {
 
   private _segment: number = 360;
   private _smallRadius = Ellipsoid.Wgs84.maximumRadius * 0.99;
-  private _bigRadius = Ellipsoid.Wgs84.maximumRadius * 1.01;
+  private _bigRadius = Ellipsoid.Wgs84.maximumRadius * 1.05;
 
   constructor(engine: Engine) {
     this.engine = engine;
     this._mesh = new ModelMesh(engine);
     this._generateVertex();
-    this._material = new ImageMaterial(this.engine, Shader.find("atmosphere"), EARTH_ATMOSPHERE);
+    this._material = new ImageMaterial(this.engine, Shader.find("atmosphere"), { url: EARTH_ATMOSPHERE, flipY: false });
   }
 
   private _generateVertex() {
@@ -91,11 +91,14 @@ export class Atmosphere {
     mesh.addSubMesh(0, indices.length);
   }
 
+  // TODO: alpha透明通道应该要开一下
   _render() {
     const engine = this.engine;
+    // const gl = engine._renderer.gl;
     const camera = engine.scene.camera;
     const mesh = this._mesh;
     const material = this._material;
+
     material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
     const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
     program.bind();

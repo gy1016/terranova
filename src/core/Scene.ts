@@ -1,4 +1,4 @@
-import { GoogleLayer, TileLayer } from "../geographic";
+import { ArcGISLayer, TileLayer, Atmosphere, Ellipsoid } from "../geographic";
 import { RayCastedGlobe } from "../geographic/RayCastedGlobe";
 import { Color, Vector3 } from "../math";
 import { Background } from "./Background";
@@ -7,7 +7,8 @@ import { Camera } from "./Camera";
 import { Engine } from "./Engine";
 import { Entity } from "./Entity";
 import { AmbientLight, PointLight } from "./lighting";
-import { ShaderData, ShaderDataGroup } from "./shader";
+import { ImageMaterial } from "./material";
+import { Shader, ShaderData, ShaderDataGroup } from "./shader";
 
 export class Scene {
   /** Scene-related shader data. */
@@ -49,8 +50,14 @@ export class Scene {
   /** The background of the scene, the default is the skybox. */
   background: Background;
 
+  _atmosphere: Atmosphere;
+
   constructor(engine: Engine) {
     this._engine = engine;
+  }
+
+  private _initialAtmosphere() {
+    this._atmosphere = new Atmosphere(this.engine);
   }
 
   private _initialGlobe() {
@@ -66,8 +73,8 @@ export class Scene {
     const camera = new Camera(engine);
     const cameraPos = engine.setting?.cameraPos || new Vector3(0, 0, 6378137 * 3);
 
-    camera.nearClipPlane = 0.000001 * this.globe.shape.maximumRadius;
-    camera.farClipPlane = 10.0 * this.globe.shape.maximumRadius;
+    camera.nearClipPlane = 0.000001 * Ellipsoid.Wgs84.maximumRadius;
+    camera.farClipPlane = 10.0 * Ellipsoid.Wgs84.maximumRadius;
 
     this._camera = camera;
     camera.transform.position = cameraPos;
@@ -93,7 +100,16 @@ export class Scene {
   private _initialLayer() {
     // 初始化图层
     // this.layers.push(new ArcGISLayer(this.engine, 2));
-    this.layers.push(new GoogleLayer(this.engine, 2));
+    this.layers.push(new ArcGISLayer(this.engine, 2));
+  }
+
+  _initial() {
+    this._initialCamera();
+    this._initialGlobe();
+    this._initialAtmosphere();
+    this._initialBackground();
+    this._initialLight();
+    this._initialLayer();
   }
 
   addRootEntity(entity: Entity): void {
@@ -106,11 +122,36 @@ export class Scene {
     }
   }
 
-  _initial() {
-    this._initialGlobe();
-    this._initialCamera();
-    this._initialBackground();
-    this._initialLight();
-    this._initialLayer();
+  _render() {
+    const engine = this.engine;
+    const gl = engine._renderer.gl;
+    const camera = this.camera;
+    const rootEntities = this.rootEntities;
+    const layers = this._layers;
+    const atmosphere = this._atmosphere;
+    const background = this.background;
+
+    // 渲染实体
+    gl.depthFunc(gl.LESS);
+    for (let i = 0; i < rootEntities.length; ++i) {
+      const { mesh, material } = rootEntities[i];
+      material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
+      const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
+      program.bind();
+      program.uploadAll(program.cameraUniformBlock, camera.shaderData);
+      program.uploadAll(program.sceneUniformBlock, this.shaderData);
+      program.uploadAll(program.materialUniformBlock, material.shaderData);
+      // TODO: 其他数据还没上传
+
+      mesh._draw(program, mesh.subMesh);
+    }
+
+    // 渲染图层
+    for (let i = 0; i < layers.length; ++i) {
+      layers[i]._render(camera.level);
+    }
+
+    atmosphere._render();
+    background._render();
   }
 }
