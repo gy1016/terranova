@@ -28,7 +28,7 @@ export class RayCastedGlobe extends Entity {
     super(
       "rayCastedGlobe",
       PrimitiveMesh.createCuboid(engine, 2 * 6378137.0, 2 * 6356752.314245, 2 * 6378137.0),
-      new ImageMaterial(engine, Shader.find("rayCastedGlobe"), EARTH_URL)
+      new ImageMaterial(engine, Shader.find("rayCastedGlobe"), { url: EARTH_URL, flipY: true })
     );
   }
 

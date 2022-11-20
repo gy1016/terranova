@@ -156,7 +156,7 @@ export class TileLayer {
       }
       url = this._initTileUrl(str, tile);
 
-      const material = new ImageMaterial(this.engine, Shader.find("tile"), url);
+      const material = new ImageMaterial(this.engine, Shader.find("tile"), { url, flipY: true });
       tile.material = material;
       this.lruCache.put(tile.key, tile);
     }
