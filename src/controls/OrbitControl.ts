@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Ellipsoid } from "../geographic";
 import { Camera } from "../core/Camera";
 import { Matrix, Vector2, Vector3 } from "../math";
 import { Spherical } from "./Spherical";
@@ -39,6 +40,7 @@ export class OrbitControl {
   minAzimuthAngle: number;
   /** Max azimuth angle. */
   maxAzimuthAngle: number;
+  // TODO: enable变量的开关控制都没有做
   /** Whether to enable damping. */
   enableDamping: boolean;
   /** Whether to enable rotate. */
@@ -99,7 +101,7 @@ export class OrbitControl {
     this.fov = 45;
     this.target = new Vector3();
     this.up = new Vector3(0, 1, 0);
-    this.minDistance = 0.1;
+    this.minDistance = Ellipsoid.Wgs84.maximumRadius;
     this.maxDistance = Infinity;
     this.minZoom = 0.0;
     this.maxZoom = Infinity;
@@ -178,6 +180,11 @@ export class OrbitControl {
     });
   }
 
+  get relativeLevelSpeed(): number {
+    const levelSpeed = 1 - this.camera.level / 10;
+    return levelSpeed > 0.5 ? levelSpeed - 0.4 : 0.2;
+  }
+
   /**
    * The life cycle of track control destruction, used to remove listener events.
    */
@@ -211,6 +218,7 @@ export class OrbitControl {
     this._spherical.theta += this._sphericalDelta.theta;
     this._spherical.phi += this._sphericalDelta.phi;
 
+    // TODO: 不超出球面这里还有问题
     this._spherical.theta = Math.max(this.minAzimuthAngle, Math.min(this.maxAzimuthAngle, this._spherical.theta));
     this._spherical.phi = Math.max(this.minPolarAngle, Math.min(this.maxPolarAngle, this._spherical.phi));
     this._spherical.makeSafe();
@@ -315,7 +323,7 @@ export class OrbitControl {
    * @returns Zoom scale.
    */
   getZoomScale() {
-    return Math.pow(0.95, this.zoomSpeed);
+    return Math.pow(0.95, this.relativeLevelSpeed);
   }
 
   /**
@@ -382,9 +390,9 @@ export class OrbitControl {
     Vector2.subtract(this._rotateEnd, this._rotateStart, this._rotateDelta);
 
     // x方向平移的百分比
-    this.rotateLeft(2 * Math.PI * (this._rotateDelta.x / this.mainElement.clientWidth) * this.rotateSpeed);
+    this.rotateLeft(2 * Math.PI * (this._rotateDelta.x / this.mainElement.clientWidth) * this.relativeLevelSpeed);
     // y方向平移的百分比
-    this.rotateUp(2 * Math.PI * (this._rotateDelta.y / this.mainElement.clientHeight) * this.rotateSpeed);
+    this.rotateUp(2 * Math.PI * (this._rotateDelta.y / this.mainElement.clientHeight) * this.relativeLevelSpeed);
     // 将end设置为新的start
     this._rotateStart = this._rotateEnd.clone();
   }
