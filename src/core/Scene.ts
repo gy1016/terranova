@@ -1,4 +1,4 @@
-import { ArcGISLayer, TileLayer, Atmosphere, Ellipsoid } from "../geographic";
+import { TileLayer, Atmosphere, Ellipsoid, GoogleLayer } from "../geographic";
 import { RayCastedGlobe } from "../geographic/RayCastedGlobe";
 import { Color, Vector3 } from "../math";
 import { Background } from "./Background";
@@ -64,7 +64,6 @@ export class Scene {
     // 将光追椭球推入根式体
     this._globe = new RayCastedGlobe(this.engine);
     this.globe.uploadShaderData(this.shaderData);
-
     this.rootEntities.push(this._globe);
   }
 
@@ -100,7 +99,7 @@ export class Scene {
   private _initialLayer() {
     // 初始化图层
     // this.layers.push(new ArcGISLayer(this.engine, 2));
-    this.layers.push(new ArcGISLayer(this.engine, 2));
+    this.layers.push(new GoogleLayer(this.engine, 2));
   }
 
   _initial() {

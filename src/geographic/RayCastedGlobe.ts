@@ -3,7 +3,6 @@ import { Ellipsoid } from "./Ellipsoid";
 import { ImageMaterial } from "../core/material";
 import { Shader, ShaderData, ShaderProperty } from "../core/shader";
 import { Engine } from "../core/Engine";
-import { EARTH_URL } from "../config";
 import { Entity } from "../core/Entity";
 
 export class RayCastedGlobe extends Entity {
@@ -28,7 +27,10 @@ export class RayCastedGlobe extends Entity {
     super(
       "rayCastedGlobe",
       PrimitiveMesh.createCuboid(engine, 2 * 6378137.0, 2 * 6356752.314245, 2 * 6378137.0),
-      new ImageMaterial(engine, Shader.find("rayCastedGlobe"), { url: EARTH_URL, flipY: true })
+      new ImageMaterial(engine, Shader.find("rayCastedGlobe"), {
+        url: "https://khms0.google.com/kh/v=930?x=0&y=0&z=0",
+        flipY: true,
+      })
     );
   }
 

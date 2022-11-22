@@ -10,7 +10,7 @@ export class Atmosphere {
   _material: Material;
 
   private _segment: number = 360;
-  private _smallRadius = Ellipsoid.Wgs84.maximumRadius * 0.98;
+  private _smallRadius = Ellipsoid.Wgs84.maximumRadius * 0.99;
   private _bigRadius = Ellipsoid.Wgs84.maximumRadius * 1.01;
 
   constructor(engine: Engine) {
@@ -44,8 +44,8 @@ export class Atmosphere {
       const by = br * Math.sin(i * deltaRadian);
 
       // 填充顶点
-      const sVertex = new Vector3(sx, sy, 1126045.6666666665);
-      const bVertex = new Vector3(bx, by, 1126045.6666666665);
+      const sVertex = new Vector3(sx, sy, 1250000);
+      const bVertex = new Vector3(bx, by, 1250000);
 
       smallCirclePos.push(sVertex);
       bigCirclePos.push(bVertex);
