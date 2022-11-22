@@ -4,6 +4,7 @@ import { Tile } from "./Tile";
 import { TileDetails } from "./TileDetails";
 import { MathUtil, Vector3 } from "../../math";
 import { LRU } from "../LRU";
+import { Ellipsoid } from "../Ellipsoid";
 
 export class TileLayer {
   // 每帧下面，当前层级当前相机位置，记录某行是否进行了可见性判断
@@ -54,12 +55,11 @@ export class TileLayer {
 
     this.level = level;
 
-    const engine = this.engine;
     const camera = this.engine.scene.camera;
     const loopLimit = this._loopLimit;
 
     const cameraWordPos = MathUtil.rightToGeographic(camera.transform.worldPosition);
-    const cameraGeodeticPos = cameraWordPos.toGeodetic3(engine.scene.globe.shape);
+    const cameraGeodeticPos = cameraWordPos.toGeodetic3(Ellipsoid.Wgs84);
     const cameraMercatorPos = cameraGeodeticPos.toMercator();
     const { row, col } = Tile.getTileRowAndCol(cameraMercatorPos.x, cameraMercatorPos.y, level);
     const rowResult = this._handleRow(level, row, col);
