@@ -48,6 +48,8 @@ export class Camera {
   private static _cameraPositionProperty = Shader.getPropertyByName("u_CameraPos");
   private static _cameraPosSquaredProperty = Shader.getPropertyByName("u_CameraPosSquared");
   private static _cameraFarPlaneProperty = Shader.getPropertyByName("u_Far");
+  // 用于大气层的MVP矩阵
+  private static _atmosphereMvpMatProperty = Shader.getPropertyByName("u_AtmoshpereMvpMat");
 
   get engine() {
     return this._engine;
@@ -61,7 +63,7 @@ export class Camera {
     if (Vector3.equals(position, lastCameraPos)) return this._level;
     this._lastCameraPos = position.clone();
 
-    const sufracePos = MathUtil.scaleToGeodeticSufrace(this.engine.scene.globe.shape, position);
+    const sufracePos = MathUtil.scaleToGeodeticSufrace(Ellipsoid.Wgs84, position);
     const h = position.subtract(sufracePos).length();
 
     // TODO: 这个该用视锥体进行数学计算
@@ -257,11 +259,18 @@ export class Camera {
     const cameraPosSquared = new Vector3();
     Vector3.multiply(cameraPos, cameraPos, cameraPosSquared);
 
+    const atmosphereMvpMat = new Matrix();
+    atmosphereMvpMat.elements[12] = this.viewMatrix.elements[12];
+    atmosphereMvpMat.elements[13] = this.viewMatrix.elements[13];
+    atmosphereMvpMat.elements[14] = this.viewMatrix.elements[14];
+    Matrix.multiply(this.projectionMatrix, atmosphereMvpMat, atmosphereMvpMat);
+
     shaderData.setFloat(Camera._cameraFarPlaneProperty, this.farClipPlane);
-    shaderData.setMatrix(Camera._vpMatrixProperty, vpMat);
-    shaderData.setMatrix(Camera._invVPMatrixProperty, invVPMat);
     shaderData.setVector3(Camera._cameraPositionProperty, cameraPos);
     shaderData.setVector3(Camera._cameraPosSquaredProperty, cameraPosSquared);
+    shaderData.setMatrix(Camera._vpMatrixProperty, vpMat);
+    shaderData.setMatrix(Camera._invVPMatrixProperty, invVPMat);
+    shaderData.setMatrix(Camera._atmosphereMvpMatProperty, atmosphereMvpMat);
   }
 
   /**
