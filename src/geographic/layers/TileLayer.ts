@@ -176,6 +176,8 @@ export class TileLayer {
     const tiles = this.tiles;
     for (let i = 0; i < tiles.length; ++i) {
       const { mesh, material } = tiles[i];
+      // ! 按道理说这里material肯定是有的，但是会报错，先加个判断
+      if (!material) continue;
       material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
       program.bind();
