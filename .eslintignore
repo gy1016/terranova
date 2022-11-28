@@ -12,3 +12,6 @@ mock
 
 # 配置文件忽略
 rollup.config.js
+
+# 暂时忽略worker文件，后续修正
+*.worker.js
