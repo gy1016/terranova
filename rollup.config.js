@@ -39,4 +39,20 @@ export default [
         : null,
     ],
   },
+  {
+    input: "./src/wasm/heat-map.worker.js",
+    output: [
+      {
+        dir: "dist/wasm",
+        format: "esm",
+        entryFileNames: "[name].js",
+      },
+    ],
+    plugins: [
+      resolve(),
+      typescript({
+        include: "./src/config/wasm.ts",
+      }),
+    ],
+  },
 ];
