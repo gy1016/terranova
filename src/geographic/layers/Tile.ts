@@ -8,6 +8,7 @@ import { Ellipsoid } from "../Ellipsoid";
 export interface TileCoord {
   row: number;
   col: number;
+  level?: number;
 }
 
 export class Tile {
