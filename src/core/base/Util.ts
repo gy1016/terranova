@@ -87,3 +87,7 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
     image.crossOrigin = "anonymous";
   });
 }
+
+export function isUint8(num: number) {
+  return typeof num == "number" && 0 <= num && num >= 255;
+}
