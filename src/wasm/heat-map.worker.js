@@ -728,7 +728,7 @@ onmessage = (ev) => {
     return postMessage([0, "error", "Bad event from host", ev.constructor.name]);
   }
   const [id, cmd, data] = ev.data;
-  if (id) {
+  if (id == undefined) {
     postMessage([0, "error", `The Heatmap id is undefined for "${cmd}".`]);
   } else {
     cmdQueue.push([id, cmd, data]);
