@@ -8,6 +8,7 @@ import { Material } from "./Material";
 interface ImageMaterialOptions {
   url: string;
   flipY: boolean;
+  base64?: boolean;
 }
 
 export class ImageMaterial extends Material {
@@ -19,13 +20,23 @@ export class ImageMaterial extends Material {
   constructor(engine: Engine, shader: Shader, options: ImageMaterialOptions) {
     super(engine, shader);
 
-    loadImage(options.url)
-      .then((image) => {
-        this.texture2d = new Texture2D(engine, image.width, image.height, TextureFormat.R8G8B8);
-        this.texture2d.setImageSource(image, options.flipY);
-      })
-      .catch((error) => {
-        throw error;
-      });
+    if (options.base64) {
+      const image = new Image();
+      image.src = "data:image/png;base64," + options.base64;
+      this._initialTexture(image, options);
+    } else {
+      loadImage(options.url)
+        .then((image) => {
+          this._initialTexture(image, options);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    }
+  }
+
+  _initialTexture(image: HTMLImageElement, options: ImageMaterialOptions) {
+    this.texture2d = new Texture2D(this.engine, image.width, image.height, TextureFormat.R8G8B8);
+    this.texture2d.setImageSource(image, options.flipY);
   }
 }
