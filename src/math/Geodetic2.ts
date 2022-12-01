@@ -10,8 +10,6 @@ import { Ellipsoid } from "../geographic";
 export class Geodetic2 implements IClone<Geodetic2>, ICopy<Geodetic2, Geodetic2> {
   private _longitude: number;
   private _latitude: number;
-  private _radLon: number;
-  private _radLat: number;
 
   get longitude(): number {
     return this._longitude;
@@ -39,18 +37,16 @@ export class Geodetic2 implements IClone<Geodetic2>, ICopy<Geodetic2, Geodetic2>
   }
 
   get radLon(): number {
-    return this._radLon;
+    return MathUtil.degreeToRadian(this.longitude);
   }
 
   get radLat(): number {
-    return this._radLat;
+    return MathUtil.degreeToRadian(this.latitude);
   }
 
   constructor(longitude: number = 0, latitude: number = 0) {
     this.longitude = longitude;
     this.latitude = latitude;
-    this._radLon = MathUtil.degreeToRadian(longitude);
-    this._radLat = MathUtil.degreeToRadian(latitude);
   }
 
   /**

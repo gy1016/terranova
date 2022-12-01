@@ -12,8 +12,6 @@ export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3>
   private _longitude: number;
   private _latitude: number;
   private _height: number;
-  private _radLon: number;
-  private _radLat: number;
 
   get longitude(): number {
     return this._longitude;
@@ -48,11 +46,11 @@ export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3>
   }
 
   get radLon(): number {
-    return this._radLon;
+    return MathUtil.degreeToRadian(this.longitude);
   }
 
   get radLat(): number {
-    return this._radLat;
+    return MathUtil.degreeToRadian(this.latitude);
   }
 
   constructor(geodetic2: Geodetic2, height?: number);
@@ -71,8 +69,6 @@ export class Geodetic3 implements IClone<Geodetic3>, ICopy<Geodetic3, Geodetic3>
       this.latitude = latitude;
       this.height = height === undefined ? 0 : height;
     }
-    this._radLon = MathUtil.degreeToRadian(this.longitude);
-    this._radLat = MathUtil.degreeToRadian(this.latitude);
   }
 
   /**
