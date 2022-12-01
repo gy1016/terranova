@@ -14,36 +14,11 @@ interface HeatPoint {
   weight: number;
 }
 
-const heatmapWorker = new Worker("../../wasm/heat-map.worker.js");
-
-heatmapWorker.onmessage = (ev) => {
-  if (!ev || !ev.data) return console.error("Bad event from worker", ev);
-  const [id, cmd, data] = ev.data;
-  // 如果对应id的热力图层存在则执行worker中传入的指令
-  if (HeatMapLayer.heatMapLayers[id]) HeatMapLayer.heatMapLayers[id].onMessage(cmd, data);
-  // 其余指令传入的id都为0
-  else if (id === 0) {
-    // 通知worker加载成功
-    if (cmd === "workerLoaded") {
-      HeatMapLayer.workerLoaded = true;
-      Logger.info("heatmapWorker was loaded!");
-    } else if (cmd === "debug") {
-      Logger.debug("heatmapWorker:", data);
-    } else if (cmd === "error") {
-      Logger.error("WORKER ERROR!", data);
-    } else {
-      // 如果id为0则认为所有heatmapLayer都要执行指令
-      Object.values(HeatMapLayer.heatMapLayers).forEach((layer) => layer.onMessage(cmd, data));
-    }
-  } else {
-    Logger.error(`There is no HeatmapLayer with id "${id}". {cmd: ${cmd}, data:${JSON.stringify(data)} }`);
-  }
-};
-
 export class HeatMapLayer {
   static heatMapLayers: Record<number, HeatMapLayer> = Object.create(null);
   static workerLoaded: boolean = false;
   static retryLimit: number = 10;
+  static heatmapWorker: Worker = new Worker("./wasm/heat-map.worker.js");
   static _count: number = 1;
 
   engine: Engine;
@@ -56,36 +31,8 @@ export class HeatMapLayer {
   maxIntensity: number;
   tiles: Tile[];
 
-  constructor(engine: Engine, config: HeatMapLayerConfig) {
-    this.id = HeatMapLayer._count++;
-    this.engine = engine;
-    const { radius, gradient, maxIntensity, tileSize } = config;
-    this.radius = radius;
-    this.gradient = gradient;
-    this.maxIntensity = maxIntensity;
-    this.tileSize = tileSize;
-
-    this.send("initHeatMapMiddleware", config);
-  }
-
-  setRadius(radius: number) {
-    this.radius = radius;
-    this.send("setRadius", radius);
-  }
-
-  setMaxIntensity(maxIntensity: number) {
-    // 如果传入的maxIntensity小于0，则将其设置为-1，然后会使用点位中的最大热力值为上限
-    if (maxIntensity <= 0) maxIntensity = -1;
-    this.maxIntensity = maxIntensity;
-    this.send("setMaxIntensity", maxIntensity);
-  }
-
-  setZoom(zoom: number) {
-    this.send("setZoom", zoom);
-  }
-
-  setGradient(gradient: string[] | number[][]) {
-    gradient = gradient.map((color) => {
+  static parseGradient(gradient: string[] | number[][]): number[][] {
+    return gradient.map((color) => {
       if (color.toString().match(/^#?[0-9a-f]{3}$/i)) {
         color = color.toString().replace(/^#?(.)(.)(.)$/, "$1$1$2$2$3$3");
       }
@@ -107,7 +54,70 @@ export class HeatMapLayer {
       }
       return color;
     });
-    this.send("setGradient", gradient);
+  }
+
+  constructor(engine: Engine, config: HeatMapLayerConfig) {
+    this.id = HeatMapLayer._count++;
+    this.engine = engine;
+    const { radius, gradient, maxIntensity, tileSize } = config;
+    this.radius = radius;
+    this.gradient = gradient;
+    this.maxIntensity = maxIntensity;
+    this.tileSize = tileSize;
+    this.initialWorker();
+    this.send("initHeatMapMiddleware", {
+      ...config,
+      zoom: engine.scene.camera.level,
+      gradient: HeatMapLayer.parseGradient(gradient),
+    });
+  }
+
+  initialWorker() {
+    HeatMapLayer.heatmapWorker.onmessage = (ev) => {
+      if (!ev || !ev.data) return console.error("Bad event from worker", ev);
+      const [id, cmd, data] = ev.data;
+      // 如果对应id的热力图层存在则执行worker中传入的指令
+      if (HeatMapLayer.heatMapLayers[id]) HeatMapLayer.heatMapLayers[id].onMessage(cmd, data);
+      // 其余指令传入的id都为0
+      else if (id === 0) {
+        // 通知worker加载成功
+        if (cmd === "workerLoaded") {
+          HeatMapLayer.workerLoaded = true;
+          Logger.info("heatmapWorker was loaded!");
+        } else if (cmd === "debug") {
+          Logger.debug("heatmapWorker:", data);
+        } else if (cmd === "error") {
+          Logger.error("WORKER ERROR!", data);
+        } else {
+          // 如果id为0则认为所有heatmapLayer都要执行指令
+          Object.values(HeatMapLayer.heatMapLayers).forEach((layer) => layer.onMessage(cmd, data));
+        }
+      } else {
+        Logger.error(`There is no HeatmapLayer with id "${id}". {cmd: ${cmd}, data:${JSON.stringify(data)} }`);
+      }
+    };
+  }
+
+  setRadius(radius: number) {
+    this.radius = radius;
+    this.send("setRadius", radius);
+  }
+
+  setMaxIntensity(maxIntensity: number) {
+    // 如果传入的maxIntensity小于0，则将其设置为-1，然后会使用点位中的最大热力值为上限
+    if (maxIntensity <= 0) maxIntensity = -1;
+    this.maxIntensity = maxIntensity;
+    this.send("setMaxIntensity", maxIntensity);
+  }
+
+  setZoom(zoom: number) {
+    this.send("setZoom", zoom);
+  }
+
+  setGradient(gradient: string[] | number[][]) {
+    this.gradient = gradient;
+    const postGradient = HeatMapLayer.parseGradient(gradient);
+    this.send("setGradient", postGradient);
   }
 
   addPoints(points: HeatPoint[]) {
@@ -153,7 +163,7 @@ export class HeatMapLayer {
       return Logger.error(`Command ${command} timeout.`);
     }
     if (HeatMapLayer.workerLoaded) {
-      heatmapWorker.postMessage([this.id, command, data]);
+      HeatMapLayer.heatmapWorker.postMessage([this.id, command, data]);
     } else {
       setTimeout(this.send.bind(this, command, data, ++retryCount), 300);
     }
