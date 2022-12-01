@@ -31,7 +31,7 @@ export class Tile {
     this.level = level;
     this.row = row;
     this.col = col;
-    this.key = `_${level}_${row}_${col}_`;
+    this.key = Tile.generateKey(level, row, col);
     this._segment = this.level < 6 ? 1 << (6 - this.level) : 1;
     this.extend = Tile.gridToWebMercator(this.level, this.row, this.col);
 
@@ -115,6 +115,10 @@ export class Tile {
 
     mesh.uploadData(noLongerAccessible);
     mesh.addSubMesh(0, indices.length);
+  }
+
+  static generateKey(level: number, row: number, col: number) {
+    return `_${level}_${row}_${col}_`;
   }
 
   /**
