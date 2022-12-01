@@ -86,7 +86,6 @@ export class TileLayer {
       res = res.concat(lastRowRes);
     }
 
-    console.log(res);
     this.tiles = res;
   }
 
