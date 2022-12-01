@@ -1,4 +1,5 @@
-import { Engine, Logger, isUint8 } from "../../core";
+import { Geodetic2 } from "../../math";
+import { Engine, Logger, isUint8, ImageMaterial, Shader } from "../../core";
 import { Tile, TileCoord } from "./Tile";
 
 interface HeatMapLayerConfig {
@@ -8,6 +9,7 @@ interface HeatMapLayerConfig {
   maxIntensity: number;
 }
 
+// lat, lng, weight
 interface HeatPoint {
   lat: number;
   lng: number;
@@ -23,14 +25,18 @@ export class HeatMapLayer {
 
   engine: Engine;
   id: number;
-  level: number;
-  points: number[] = [];
+  points: HeatPoint[] = [];
   radius: number;
   tileSize: number;
   gradient: number[][] | string[];
   maxIntensity: number;
-  tiles: Tile[];
+  tiles: Map<string, Tile>;
 
+  /**
+   * Convert the incoming color band to an array of floating point types.
+   * @param gradient Color ramp represented by array of strings or array of floats
+   * @returns Color ramp represented by array of floats
+   */
   static parseGradient(gradient: string[] | number[][]): number[][] {
     return gradient.map((color) => {
       if (color.toString().match(/^#?[0-9a-f]{3}$/i)) {
@@ -124,7 +130,36 @@ export class HeatMapLayer {
   }
 
   addPoints(points: HeatPoint[]) {
-    this.send("addPoints", points);
+    const postPoints: number[][] = [[points[0].lat, points[0].lng, points[0].weight]];
+    this.points = this.points.concat(points);
+    // 求出所有点位的包围盒
+    const minGeodetic2 = new Geodetic2(points[0].lng, points[0].lat);
+    const maxGeodetic2 = new Geodetic2(points[0].lng, points[0].lat);
+
+    for (let i = 1; i < this.points.length; ++i) {
+      const point = this.points[i];
+      minGeodetic2.latitude = Math.min(minGeodetic2.latitude, point.lat);
+      minGeodetic2.longitude = Math.min(minGeodetic2.longitude, point.lng);
+      maxGeodetic2.latitude = Math.max(maxGeodetic2.latitude, point.lat);
+      maxGeodetic2.longitude = Math.max(maxGeodetic2.longitude, point.lng);
+      postPoints.push([point.lat, point.lng, point.weight]);
+    }
+
+    const minMercator = minGeodetic2.toMercator();
+    const maxMercator = maxGeodetic2.toMercator();
+
+    const minTileCoord = Tile.getTileRowAndCol(minMercator.x, minMercator.y, this.engine.scene.camera.level);
+    const maxTileCoord = Tile.getTileRowAndCol(maxMercator.x, maxMercator.y, this.engine.scene.camera.level);
+
+    this.tiles = new Map();
+    for (let row = minTileCoord.row; row <= maxTileCoord.row; ++row) {
+      for (let col = minTileCoord.col; col <= maxTileCoord.col; ++col) {
+        const tile = new Tile(this.engine, this.engine.scene.camera.level, row, col);
+        this.tiles.set(tile.key, tile);
+      }
+    }
+
+    this.send("addPoints", postPoints);
   }
 
   createTile(x: number, y: number) {
@@ -133,6 +168,7 @@ export class HeatMapLayer {
 
   pointsAdded({ pointsLength, heater }: { pointsLength: number; heater: number }) {
     Logger.info(`${pointsLength} points added. The heater pixel is ${heater}.`);
+    this.updateTiles();
   }
 
   gradientSeted(length: number) {
@@ -152,16 +188,22 @@ export class HeatMapLayer {
   }
 
   tileCreated(tileInfo: TileCoord & { base64: string }) {
-    console.log(tileInfo);
+    Logger.info(`I will create the tile row ${tileInfo.row}, col: ${tileInfo.col} and level: ${tileInfo.level}`);
+    const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
+    tile.material = new ImageMaterial(this.engine, Shader.find("tile"), { flipY: true, base64: tileInfo.base64 });
   }
 
   updateTiles() {
-    console.log("马上来写你啦！");
+    for (const tile of this.tiles.values()) {
+      this.send("createTile", { x: tile.row, y: tile.col });
+    }
   }
 
   // 去执行对应的命令
   onMessage(command: string, data: unknown) {
     if (this[command]) this[command](data);
+    else if (command === "debug") Logger.debug(data);
+    else if (command === "info") Logger.info(data);
     else Logger.error(`The HeatmapLayer command "${command}" does not exists.`);
   }
 
