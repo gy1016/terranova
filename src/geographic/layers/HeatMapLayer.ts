@@ -4,7 +4,7 @@ import { Tile, TileCoord } from "./Tile";
 interface HeatMapLayerConfig {
   radius: number;
   tileSize: number;
-  gradient: number[];
+  gradient: number[][] | string[];
   maxIntensity: number;
 }
 
@@ -19,8 +19,11 @@ const heatmapWorker = new Worker("../../wasm/heat-map.worker.js");
 heatmapWorker.onmessage = (ev) => {
   if (!ev || !ev.data) return console.error("Bad event from worker", ev);
   const [id, cmd, data] = ev.data;
+  // 如果对应id的热力图层存在则执行worker中传入的指令
   if (HeatMapLayer.heatMapLayers[id]) HeatMapLayer.heatMapLayers[id].onMessage(cmd, data);
+  // 其余指令传入的id都为0
   else if (id === 0) {
+    // 通知worker加载成功
     if (cmd === "workerLoaded") {
       HeatMapLayer.workerLoaded = true;
       Logger.info("heatmapWorker was loaded!");
@@ -28,6 +31,9 @@ heatmapWorker.onmessage = (ev) => {
       Logger.debug("heatmapWorker:", data);
     } else if (cmd === "error") {
       Logger.error("WORKER ERROR!", data);
+    } else {
+      // 如果id为0则认为所有heatmapLayer都要执行指令
+      Object.values(HeatMapLayer.heatMapLayers).forEach((layer) => layer.onMessage(cmd, data));
     }
   } else {
     Logger.error(`There is no HeatmapLayer with id "${id}". {cmd: ${cmd}, data:${JSON.stringify(data)} }`);
@@ -46,7 +52,7 @@ export class HeatMapLayer {
   points: number[] = [];
   radius: number;
   tileSize: number;
-  gradient: number[];
+  gradient: number[][] | string[];
   maxIntensity: number;
   tiles: Tile[];
 
@@ -65,7 +71,6 @@ export class HeatMapLayer {
   setRadius(radius: number) {
     this.radius = radius;
     this.send("setRadius", radius);
-    this.updateTiles();
   }
 
   setMaxIntensity(maxIntensity: number) {
@@ -73,12 +78,10 @@ export class HeatMapLayer {
     if (maxIntensity <= 0) maxIntensity = -1;
     this.maxIntensity = maxIntensity;
     this.send("setMaxIntensity", maxIntensity);
-    this, this.updateTiles();
   }
 
   setZoom(zoom: number) {
     this.send("setZoom", zoom);
-    this.updateTiles();
   }
 
   setGradient(gradient: string[] | number[][]) {
@@ -105,7 +108,6 @@ export class HeatMapLayer {
       return color;
     });
     this.send("setGradient", gradient);
-    this.updateTiles();
   }
 
   addPoints(points: HeatPoint[]) {
@@ -140,6 +142,7 @@ export class HeatMapLayer {
     console.log("马上来写你啦！");
   }
 
+  // 去执行对应的命令
   onMessage(command: string, data: unknown) {
     if (this[command]) this[command](data);
     else Logger.error(`The HeatmapLayer command "${command}" does not exists.`);
