@@ -64,6 +64,9 @@ export class HeatMapLayer {
     this.gradient = gradient;
     this.maxIntensity = maxIntensity;
     this.tileSize = tileSize;
+
+    HeatMapLayer.heatMapLayers[this.id] = this;
+
     this.initialWorker();
     this.send("initHeatMapMiddleware", {
       ...config,
@@ -134,6 +137,10 @@ export class HeatMapLayer {
 
   gradientSeted(length: number) {
     Logger.info(`Gradient updated with ${length} color steps.`);
+  }
+
+  zoomSeted(zoom: number) {
+    Logger.info(`The zoom in WASM is successfully set to ${zoom}.`);
   }
 
   maxIntensitySeted(maxIntensity: number) {
