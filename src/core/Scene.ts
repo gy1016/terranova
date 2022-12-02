@@ -1,4 +1,4 @@
-import { TileLayer, Atmosphere, Ellipsoid, GoogleLayer } from "../geographic";
+import { Layer, Atmosphere, Ellipsoid, GoogleLayer } from "../geographic";
 import { RayCastedGlobe } from "../geographic/RayCastedGlobe";
 import { Color, Vector3 } from "../math";
 import { Background } from "./Background";
@@ -25,7 +25,7 @@ export class Scene {
   ambientLight: AmbientLight;
 
   private _rootEntities: Entity[] = [];
-  private _layers: TileLayer[] = [];
+  private _layers: Layer[] = [];
 
   get engine() {
     return this._engine;
@@ -109,6 +109,15 @@ export class Scene {
     this._initialBackground();
     this._initialLight();
     this._initialLayer();
+  }
+
+  addLayer(layer: Layer): void {
+    if (layer instanceof Layer) {
+      this.layers.push(layer);
+      Logger.info("layers add successful!");
+    } else {
+      Logger.error("input type not equal Layer!");
+    }
   }
 
   addRootEntity(entity: Entity): void {

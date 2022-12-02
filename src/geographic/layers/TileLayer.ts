@@ -5,13 +5,13 @@ import { TileDetails } from "./TileDetails";
 import { MathUtil, Vector3 } from "../../math";
 import { LRU } from "../LRU";
 import { Ellipsoid } from "../Ellipsoid";
+import { Layer } from "./Layer";
 
-export class TileLayer {
+export class TileLayer extends Layer {
   // 每帧下面，当前层级当前相机位置，记录某行是否进行了可见性判断
   private _oneFrameRowRecords: Record<number, boolean>;
   protected _address: string | string[];
 
-  engine: Engine;
   level: number;
   lruCache: LRU<string, Tile> = new LRU(50);
   tiles: Tile[] = [];
@@ -21,7 +21,7 @@ export class TileLayer {
   private _cameraLastPos: Vector3 = new Vector3();
 
   constructor(engine: Engine, level: number, service: keyof TileServiceMap) {
-    this.engine = engine;
+    super(engine);
     this.level = level;
     this._address = TILE_SERVICE_MAP[service];
     this._loopLimit = Math.min(10, (1 << level) - 1);

@@ -1,6 +1,7 @@
 import { Geodetic2 } from "../../math";
 import { Engine, Logger, isUint8, ImageMaterial, Shader } from "../../core";
 import { Tile, TileCoord } from "./Tile";
+import { Layer } from "./Layer";
 
 interface HeatMapLayerConfig {
   radius: number;
@@ -16,14 +17,13 @@ interface HeatPoint {
   weight: number;
 }
 
-export class HeatMapLayer {
+export class HeatMapLayer extends Layer {
   static heatMapLayers: Record<number, HeatMapLayer> = Object.create(null);
   static workerLoaded: boolean = false;
   static retryLimit: number = 10;
   static heatmapWorker: Worker = new Worker("./wasm/heat-map.worker.js");
   static _count: number = 1;
 
-  engine: Engine;
   id: number;
   points: HeatPoint[] = [];
   radius: number;
@@ -63,8 +63,8 @@ export class HeatMapLayer {
   }
 
   constructor(engine: Engine, config: HeatMapLayerConfig) {
+    super(engine);
     this.id = HeatMapLayer._count++;
-    this.engine = engine;
     const { radius, gradient, maxIntensity, tileSize } = config;
     this.radius = radius;
     this.gradient = gradient;
@@ -215,6 +215,26 @@ export class HeatMapLayer {
       HeatMapLayer.heatmapWorker.postMessage([this.id, command, data]);
     } else {
       setTimeout(this.send.bind(this, command, data, ++retryCount), 300);
+    }
+  }
+
+  // TODO: 抽象一个图层类，提取公共方法
+  _render(level: number) {
+    const engine = this.engine;
+    const camera = engine.scene.camera;
+    console.log("current level: ", level);
+
+    for (const tile of this.tiles.values()) {
+      const { mesh, material } = tile;
+      // ! 按道理说这里material肯定是有的，但是会报错，先加个判断
+      if (!material) continue;
+      material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
+      const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
+      program.bind();
+      program.uploadAll(program.cameraUniformBlock, camera.shaderData);
+      program.uploadAll(program.materialUniformBlock, material.shaderData);
+
+      mesh._draw(program, mesh.subMesh);
     }
   }
 }
