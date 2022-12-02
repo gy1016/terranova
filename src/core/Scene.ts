@@ -155,6 +155,7 @@ export class Scene {
     }
 
     // 渲染图层
+    gl.depthFunc(gl.LEQUAL);
     for (let i = 0; i < layers.length; ++i) {
       layers[i]._render(camera.level);
     }
