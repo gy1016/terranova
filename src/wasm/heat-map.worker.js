@@ -688,7 +688,7 @@ class HeatmapMiddleware {
     if (this.isReady) {
       this.debug(`Creating tile(${this.tileSize}) at ${x},${y}. Zoom: ${this.zoom}`);
       const tile = createTile(this.id, x, y, this.tileSize);
-      this.send("tileCreated", { row: x, col: y, level: this.zoom, base64: tile });
+      this.send("tileCreated", { row: y, col: x, level: this.zoom, base64: tile });
     } else {
       this.debug(`Because WASM is not compiled, the tile creation fails.`);
     }

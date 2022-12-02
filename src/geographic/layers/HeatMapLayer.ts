@@ -83,7 +83,7 @@ export class HeatMapLayer extends Layer {
 
   initialWorker() {
     HeatMapLayer.heatmapWorker.onmessage = (ev) => {
-      if (!ev || !ev.data) return console.error("Bad event from worker", ev);
+      if (!ev || !ev.data) return Logger.error("Bad event from worker", ev);
       const [id, cmd, data] = ev.data;
       // 如果对应id的热力图层存在则执行worker中传入的指令
       if (HeatMapLayer.heatMapLayers[id]) HeatMapLayer.heatMapLayers[id].onMessage(cmd, data);
@@ -195,7 +195,7 @@ export class HeatMapLayer extends Layer {
 
   updateTiles() {
     for (const tile of this.tiles.values()) {
-      this.send("createTile", { x: tile.row, y: tile.col });
+      this.send("createTile", { x: tile.col, y: tile.row });
     }
   }
 
@@ -222,7 +222,6 @@ export class HeatMapLayer extends Layer {
   _render(level: number) {
     const engine = this.engine;
     const camera = engine.scene.camera;
-    console.log("current level: ", level);
 
     for (const tile of this.tiles.values()) {
       const { mesh, material } = tile;
