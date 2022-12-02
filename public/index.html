@@ -37,7 +37,12 @@
         gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
         maxIntensity: 20,
       });
-      test.addPoints([{ lat: 30, lng: 30, weight: 10 }]);
+      test.addPoints([
+        { lat: 30, lng: 30, weight: 10 },
+        { lat: 40, lng: 40, weight: 8 },
+        { lat: 50, lng: 50, weight: 19 },
+      ]);
+      whuer3d.scene.addLayer(test);
       whuer3d.run();
     </script>
   </body>
