@@ -133,39 +133,25 @@ export class HeatMapLayer extends Layer {
   // 根据所有热力点位生成对应层级的瓦片，会清空当前tiles的map容器
   _accordPointsGenerateTiles(points: HeatPoint[], zoom: number): number[][] {
     const postPoints: number[][] = [[points[0].lat, points[0].lng, points[0].weight]];
-    // 求出所有点位的包围盒
-    const minGeodetic2 = new Geodetic2(points[0].lng, points[0].lat);
-    const maxGeodetic2 = new Geodetic2(points[0].lng, points[0].lat);
-    for (let i = 1; i < points.length; ++i) {
-      const point = points[i];
-      minGeodetic2.latitude = Math.min(minGeodetic2.latitude, point.lat);
-      minGeodetic2.longitude = Math.min(minGeodetic2.longitude, point.lng);
-      maxGeodetic2.latitude = Math.max(maxGeodetic2.latitude, point.lat);
-      maxGeodetic2.longitude = Math.max(maxGeodetic2.longitude, point.lng);
-      postPoints.push([point.lat, point.lng, point.weight]);
-    }
-
-    const minMercator = minGeodetic2.toMercator();
-    const maxMercator = maxGeodetic2.toMercator();
-
-    const minTileCoord = Tile.getTileRowAndCol(minMercator.x, minMercator.y, zoom);
-    const maxTileCoord = Tile.getTileRowAndCol(maxMercator.x, maxMercator.y, zoom);
-
-    const minRow = Math.min(minTileCoord.row, maxTileCoord.row);
-    const minCol = Math.min(minTileCoord.col, maxTileCoord.col);
-
-    const maxRow = Math.max(minTileCoord.row, maxTileCoord.row);
-    const maxCol = Math.max(minTileCoord.col, maxTileCoord.col);
 
     // ! 这里应该会被GC吧，这里欠缺考虑
     this.tiles = new Map();
 
-    // TODO: 其实有些瓦片可能确实不需要，按理说只需要计算出点位对应的瓦片就行，待优化
-    for (let row = minRow; row <= maxRow; ++row) {
-      for (let col = minCol; col <= maxCol; ++col) {
-        const tile = new Tile(this.engine, this.engine.scene.camera.level, row, col);
-        this.tiles.set(tile.key, tile);
-      }
+    for (const point of points) {
+      // 先把所有点都推进结果数组
+      postPoints.push([point.lat, point.lng, point.weight]);
+
+      // ! 这里要求传入的热力点位都是经纬度格式
+      const geodetic2 = new Geodetic2(point.lng, point.lat);
+      const mercator = geodetic2.toMercator();
+      const curTileRowAndCol = Tile.getTileRowAndCol(mercator.x, mercator.y, zoom);
+      const key = Tile.generateKey(zoom, curTileRowAndCol.row, curTileRowAndCol.col);
+
+      // 如果该点所在的瓦片已经存在了则直接下一个点位
+      if (this.tiles.has(key)) continue;
+
+      const tile = new Tile(this.engine, this.engine.scene.camera.level, curTileRowAndCol.row, curTileRowAndCol.col);
+      this.tiles.set(key, tile);
     }
 
     return postPoints;
