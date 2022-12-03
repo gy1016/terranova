@@ -26,11 +26,19 @@
   <body>
     <canvas id="gy"> your browser not support canvas </canvas>
     <script type="module">
-      import { Engine, PrimitiveMesh, Material, Shader, Entity, HeatMapLayer, Logger } from "./index.esm.js";
+      import { Engine, PrimitiveMesh, Material, Shader, Entity, HeatMapLayer, Logger, Vector3 } from "./index.esm.js";
 
       Logger.enable();
 
-      const whuer3d = new Engine("gy");
+      const whuer3d = new Engine(
+        "gy",
+        {
+          cameraPos: new Vector3(0, 0, 6378137 * 3),
+        },
+        {
+          alpha: true,
+        }
+      );
       const test = new HeatMapLayer(whuer3d, {
         radius: 10,
         tileSize: 256,

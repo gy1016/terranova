@@ -255,7 +255,13 @@ export class HeatMapLayer extends Layer {
     this._lastZoom = level;
 
     const engine = this.engine;
+    const gl = engine._renderer.gl;
     const camera = engine.scene.camera;
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     for (const tile of this.tiles.values()) {
       const { mesh, material } = tile;
@@ -269,5 +275,9 @@ export class HeatMapLayer extends Layer {
 
       mesh._draw(program, mesh.subMesh);
     }
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
   }
 }

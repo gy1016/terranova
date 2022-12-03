@@ -1,5 +1,5 @@
 import { Vector3, Vector2 } from "../math";
-import { Engine, ModelMesh, Material, ImageMaterial, Shader } from "../core";
+import { Engine, ModelMesh, Material, ImageMaterial, Shader, TextureFormat } from "../core";
 import { Ellipsoid } from "../geographic";
 import { EARTH_ATMOSPHERE } from "../config";
 
@@ -17,7 +17,11 @@ export class Atmosphere {
     this.engine = engine;
     this._mesh = new ModelMesh(engine);
     this._generateVertex();
-    this._material = new ImageMaterial(this.engine, Shader.find("atmosphere"), { url: EARTH_ATMOSPHERE, flipY: false });
+    this._material = new ImageMaterial(this.engine, Shader.find("atmosphere"), {
+      url: EARTH_ATMOSPHERE,
+      flipY: false,
+      textureFormat: TextureFormat.R8G8B8A8,
+    });
   }
 
   private _generateVertex() {
@@ -91,13 +95,18 @@ export class Atmosphere {
     mesh.addSubMesh(0, indices.length);
   }
 
-  // TODO: alpha透明通道应该要开一下
   _render() {
     const engine = this.engine;
-    // const gl = engine._renderer.gl;
+    const gl = engine._renderer.gl;
     const camera = engine.scene.camera;
     const mesh = this._mesh;
     const material = this._material;
+
+    // TODO: 这段固定逻辑应该要抽离以下，热力图层也有这个问题
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
     const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
@@ -106,5 +115,9 @@ export class Atmosphere {
     program.uploadAll(program.materialUniformBlock, material.shaderData);
 
     mesh._draw(program, mesh.subMesh);
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
   }
 }
