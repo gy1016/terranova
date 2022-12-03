@@ -1,5 +1,5 @@
 import { Geodetic2 } from "../../math";
-import { Engine, Logger, isUint8, ImageMaterial, Shader } from "../../core";
+import { Engine, Logger, isUint8, ImageMaterial, Shader, TextureFormat } from "../../core";
 import { Tile, TileCoord } from "./Tile";
 import { Layer } from "./Layer";
 
@@ -214,7 +214,11 @@ export class HeatMapLayer extends Layer {
     // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
     const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
     if (!tile) return;
-    tile.material = new ImageMaterial(this.engine, Shader.find("tile"), { flipY: true, base64: tileInfo.base64 });
+    tile.material = new ImageMaterial(this.engine, Shader.find("tile"), {
+      flipY: true,
+      base64: tileInfo.base64,
+      textureFormat: TextureFormat.R8G8B8A8,
+    });
   }
 
   updateTiles() {
