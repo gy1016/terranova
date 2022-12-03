@@ -15,6 +15,7 @@ interface Options {
   url?: string;
   flipY: boolean;
   base64?: string;
+  textureFormat?: TextureFormat;
 }
 
 type ImageMaterialOptions = RequireOnlyOne<Options, "base64" | "url">;
@@ -48,7 +49,9 @@ export class ImageMaterial extends Material {
   }
 
   _initialTexture(image: HTMLImageElement, options: ImageMaterialOptions) {
-    this.texture2d = new Texture2D(this.engine, image.width, image.height, TextureFormat.R8G8B8);
+    let { textureFormat } = options;
+    textureFormat = textureFormat == undefined ? TextureFormat.R8G8B8 : textureFormat;
+    this.texture2d = new Texture2D(this.engine, image.width, image.height, textureFormat);
     this.texture2d.setImageSource(image, options.flipY);
   }
 }
