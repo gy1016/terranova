@@ -7,6 +7,7 @@ import { Shader, ShaderData, ShaderDataGroup } from "./shader";
 import { Transform } from "./Transform";
 import { OrbitControl } from "../controls";
 import { Ellipsoid } from "../geographic";
+import { Logger } from "./base";
 
 export class Camera {
   /** Shader data. */
@@ -57,14 +58,25 @@ export class Camera {
 
   // ! TODO: 不能超过指定层级还没做
   get level() {
-    const position = this.transform.position.clone();
+    const cameraPos = MathUtil.rightToGeographic(this.transform.worldPosition);
     const lastCameraPos = this._lastCameraPos;
 
-    if (Vector3.equals(position, lastCameraPos)) return this._level;
-    this._lastCameraPos = position.clone();
+    if (Vector3.equals(cameraPos, lastCameraPos)) return this._level;
+    this._lastCameraPos = cameraPos.clone();
 
-    const sufracePos = MathUtil.scaleToGeodeticSufrace(Ellipsoid.Wgs84, position);
-    const h = position.subtract(sufracePos).length();
+    const cameraPosSquared = cameraPos.clone().multiply(cameraPos);
+    const normalDir = new Vector3(0, 0, 0).clone().subtract(cameraPos).normalize();
+
+    const i = MathUtil.rayIntersectEllipsoid(
+      cameraPos,
+      cameraPosSquared,
+      normalDir,
+      Ellipsoid.Wgs84.oneOverRadiiSquared
+    );
+
+    const h = i.near;
+
+    Logger.debug(`相机的位置x:${cameraPos.x},y:${cameraPos.y},z:${cameraPos.z}, 距离表面高度h:${h}`);
 
     // TODO: 这个该用视锥体进行数学计算
     // ! It's ugly but useful!
