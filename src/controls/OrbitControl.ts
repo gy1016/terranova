@@ -101,7 +101,7 @@ export class OrbitControl {
     this.fov = 45;
     this.target = new Vector3();
     this.up = new Vector3(0, 1, 0);
-    this.minDistance = Ellipsoid.Wgs84.maximumRadius;
+    this.minDistance = Ellipsoid.Wgs84.minimumRadius;
     this.maxDistance = Infinity;
     this.minZoom = 0.0;
     this.maxZoom = Infinity;
@@ -113,9 +113,9 @@ export class OrbitControl {
     this.dampingFactor = 0.1;
     this.zoomFactor = 0.2;
     this.enableZoom = true;
-    this.zoomSpeed = 1.0;
+    // this.zoomSpeed = 1.0;
     this.enableRotate = true;
-    this.rotateSpeed = 1.0;
+    // this.rotateSpeed = 1.0;
     this.enablePan = true;
     this.autoRotate = false;
     this.mouseButtons = {
@@ -181,8 +181,7 @@ export class OrbitControl {
   }
 
   get relativeLevelSpeed(): number {
-    const levelSpeed = 1 - this.camera.level / 10;
-    return levelSpeed > 0.5 ? levelSpeed - 0.4 : 0.2;
+    return Math.pow(0.55, this.camera.level);
   }
 
   /**

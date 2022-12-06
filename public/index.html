@@ -43,13 +43,16 @@
         radius: 10,
         tileSize: 256,
         gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
-        maxIntensity: 20,
+        maxIntensity: 50,
       });
-      test.addPoints([
-        { lat: 30, lng: 30, weight: 10 },
-        { lat: 40, lng: 40, weight: 8 },
-        { lat: 50, lng: 50, weight: 19 },
-      ]);
+      const heatPoints = [];
+      for (let i = 0; i < 10000; i++)
+        heatPoints.push({
+          lat: 29.58 + (Math.random() * 5) / 100,
+          lng: 113.41 + (Math.random() * 8) / 100,
+          weight: Math.random() * 30,
+        });
+      test.addPoints(heatPoints);
       whuer3d.scene.addLayer(test);
       whuer3d.run();
     </script>
