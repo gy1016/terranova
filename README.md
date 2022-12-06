@@ -99,7 +99,9 @@ whuer3d 目前包含六大模块，架构图如下所示：
 
 ![Shader Module](http://121.199.160.202/images/project/lamb3d/shader.png)
 
-# 使用
+# 案例
+
+## 简单使用
 
 首先我们使用 pnpm 来安装：
 
@@ -125,6 +127,56 @@ whuer3d.run();
 我们来看看效果：
 
 ![Engine Architecture](http://121.199.160.202/images/project/lamb3d/earth.png)
+
+## 热力图计算
+
+热力图层使用 WASM 进行生成，有着足够好的运算性能，我们模拟武汉边界内的一些热力点位，使用方式如下：
+
+```js
+import { Engine } from "whuer3d";
+
+// 实例化引擎
+const whuer3d = new Engine(
+  "lamb",
+  {
+    cameraPos: new Vector3(0, 0, 6378137 * 3),
+  },
+  {
+    alpha: true,
+  }
+);
+
+// 实例化热力图层
+const heatMapLayer = new HeatMapLayer(whuer3d, {
+  // 热力点的影响半径
+  radius: 10,
+  // 热力瓦片的大小
+  tileSize: 256,
+  // 色带渐变色设置
+  gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
+  // 最大热力值
+  maxIntensity: 50,
+});
+
+// 模拟热力点位信息
+const heatPoints = [];
+for (let i = 0; i < 10000; i++)
+  heatPoints.push({
+    lat: 29.58 + (Math.random() * 5) / 100,
+    lng: 113.41 + (Math.random() * 8) / 100,
+    weight: Math.random() * 30,
+  });
+
+// 将点位增加到热力图层当中
+heatMapLayer.addPoints(heatPoints);
+// 将热力图层增加到引擎场景当中
+whuer3d.scene.addLayer(heatMapLayer);
+whuer3d.run();
+```
+
+我们来看看效果：
+
+![WASM热力图生成效果](http://121.199.160.202/images/project/lamb3d/heatMap.png)
 
 # 参考仓库
 
