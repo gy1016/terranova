@@ -89,6 +89,7 @@ export class Tile {
      * 1    2
      */
     // (segment ** 2 * 2 * 3)
+    // TODO: 所有瓦片的顶点索引可以公用，只需要生成一次就可以！
     for (let i = 0; i < this._segment; ++i) {
       for (let j = 0; j < this._segment; ++j) {
         const idx0 = (this._segment + 1) * i + j;
