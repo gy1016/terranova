@@ -1,4 +1,4 @@
-import { Vector4 } from "../../src";
+import { Vector4 } from "../../src/math/Vector4";
 import { Matrix } from "../../src/math/Matrix";
 
 describe("Matrix test", () => {

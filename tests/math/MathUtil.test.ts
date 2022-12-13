@@ -1,5 +1,5 @@
-import { Vector3 } from "../../src";
-import { Ellipsoid } from "../../src/geographic";
+import { Vector3 } from "../../src/math/Vector3";
+import { Ellipsoid } from "../../src/geographic/Ellipsoid";
 import { MathUtil } from "../../src/math/MathUtil";
 
 describe("MathUtil test", () => {

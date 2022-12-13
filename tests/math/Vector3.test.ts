@@ -1,4 +1,4 @@
-import { Ellipsoid } from "../../src/geographic";
+import { Ellipsoid } from "../../src/geographic/Ellipsoid";
 import { Vector3 } from "../../src/math/Vector3";
 
 describe("Vector3 test", () => {

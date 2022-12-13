@@ -1,4 +1,4 @@
-import { Tile } from "../../src/geographic";
+import { Tile } from "../../src/geographic/layers/Tile";
 
 describe("Tile test", () => {
   it("gridToWebMercator test", () => {
