@@ -39,7 +39,7 @@ export class Tile {
     this._generateVertex();
   }
 
-  private _generateVertex() {
+  protected _generateVertex() {
     const _tempVector2 = new Vector2();
 
     // const count = (this._segment + 1) ** 2;
