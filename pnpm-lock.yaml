@@ -14,6 +14,7 @@ specifiers:
   husky: ^8.0.1
   jest: ^29.2.2
   jest-environment-jsdom: ^29.2.2
+  lerc: ^4.0.1
   lint-staged: ^13.0.3
   prettier: ^2.7.1
   rollup: ^3.2.3
@@ -23,6 +24,9 @@ specifiers:
   ts-jest: ^29.0.3
   tslib: ^2.4.1
   typescript: ^4.8.4
+
+dependencies:
+  lerc: registry.npmmirror.com/lerc/4.0.1
 
 devDependencies:
   '@commitlint/cli': registry.npmmirror.com/@commitlint/cli/17.1.2
@@ -4286,6 +4290,12 @@ packages:
     version: 3.0.3
     engines: {node: '>=6'}
     dev: true
+
+  registry.npmmirror.com/lerc/4.0.1:
+    resolution: {integrity: sha512-b351eOjY3DKm1H2hDVhXswsd2RCK6bgREBK6Z639ctClOuYXTi9a44l8yO3zm1pYM2o4WrriloTAKgyrb/0EyA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lerc/-/lerc-4.0.1.tgz}
+    name: lerc
+    version: 4.0.1
+    dev: false
 
   registry.npmmirror.com/leven/3.1.0:
     resolution: {integrity: sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/leven/-/leven-3.1.0.tgz}

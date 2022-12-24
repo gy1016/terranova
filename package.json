@@ -56,5 +56,8 @@
     "*.js|ts": [
       "npm run test"
     ]
+  },
+  "dependencies": {
+    "lerc": "^4.0.1"
   }
 }
