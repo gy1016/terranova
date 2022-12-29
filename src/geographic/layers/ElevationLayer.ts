@@ -1,26 +1,61 @@
 import { Engine, ImageMaterial, Shader } from "../../core";
+import { Terrain } from "../Terrain";
 import { Layer } from "./Layer";
-import { Tile } from "./Tile";
+import * as Lerc from "lerc";
 
 interface ElevationLayerConfig {
-  url: string;
+  terrainAddress: string;
+  tileAddress: string;
 }
 
 export class ElevationLayer extends Layer {
-  tiles: Tile[] = [];
+  terrains: Terrain[];
+  private _terrainAddress: string;
+  private _tileAddress: string;
 
   constructor(engine: Engine, config: ElevationLayerConfig) {
     super(engine);
+    this._terrainAddress = config.terrainAddress;
+    this._tileAddress = config.tileAddress;
+  }
+
+  async _refresh() {
+    await Lerc.load();
+
+    const terrainAddress = this._terrainAddress;
+    const tileAddress = this._tileAddress;
+    let terrainUrl: string;
+    let tileUrl: string;
+
+    for (let i = 0; i < 2; ++i) {
+      for (let j = 0; j < 2; ++j) {
+        const terrain = new Terrain(this.engine, 1, i, j);
+        // 生成高度图的资源URL
+        terrainUrl = this._initUrl(terrainAddress, terrain);
+        const arrayBuffer = await fetch(terrainUrl).then((response) => response.arrayBuffer());
+        const result = Lerc.decode(arrayBuffer);
+        const heightmap = result.pixels[0];
+        terrain.width = result.width;
+        terrain.height = result.height;
+        // 根据高度图生成格网
+        terrain._generateVertex(heightmap);
+
+        // 根据瓦片生成材质
+        tileUrl = this._initUrl(tileAddress, terrain);
+        const material = new ImageMaterial(this.engine, Shader.find("tile"), { url: tileUrl, flipY: true });
+        terrain.material = material;
+        this.terrains.push(terrain);
+      }
+    }
   }
 
   _render(level: number) {
     const engine = this.engine;
     const camera = engine.scene.camera;
-    const tiles = this.tiles;
+    const terrains = this.terrains;
 
-    for (let i = 0; i < tiles.length; ++i) {
-      const { mesh, material } = tiles[i];
-      // ! 按道理说这里material肯定是有的，但是会报错，先加个判断
+    for (let i = 0; i < terrains.length; ++i) {
+      const { mesh, material } = terrains[i];
       if (!material) continue;
       material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
