@@ -28,21 +28,6 @@ export class TileLayer extends Layer {
     this._oneFrameRowRecords = Object.create(null);
   }
 
-  /**
-   * Select the base Url according to the service provider, and then obtain its url according to the tile instance.
-   * @param str Tile address url
-   * @param tile Tile instance
-   * @returns The tile instance url.
-   */
-  private _initTileUrl(str: string, tile: Tile) {
-    const res = [...str.matchAll(/(level|row|col)/gi)];
-    for (let i = 0; i < res.length; ++i) {
-      const key: string = res[i][0];
-      str = str.replace(key, tile[key]);
-    }
-    return str;
-  }
-
   private _isTileVisible(level: number, row: number, col: number): boolean {
     const tileDetails: TileDetails = new TileDetails(this.engine.scene.camera, level, row, col);
 
@@ -153,7 +138,7 @@ export class TileLayer extends Layer {
       } else {
         str = this._address;
       }
-      url = this._initTileUrl(str, tile);
+      url = this._initUrl(str, tile);
 
       const material = new ImageMaterial(this.engine, Shader.find("tile"), { url, flipY: true });
       tile.material = material;
