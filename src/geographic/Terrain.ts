@@ -35,7 +35,7 @@ export class Terrain {
     this.mesh = new ModelMesh(engine);
   }
 
-  _generateVertex(heightmap: TypedArray) {
+  _generateVertex(heightmap: TypedArray, exaggerationFactor: number) {
     const ellipsoid = this.ellipsoid;
     const width = this.width;
     const height = this.height;
@@ -70,7 +70,7 @@ export class Terrain {
       for (let colIndex = startCol; colIndex < endCol; ++colIndex) {
         // 用于从高度图中读取像素
         const index = rowIndex * width + colIndex;
-        const heightSample = heightmap[index] * 100;
+        const heightSample = heightmap[index] * exaggerationFactor;
         const longitude = geographicWest + granularityX * colIndex;
         const u = (longitude - geographicWest) / (geographicEast - geographicWest);
 

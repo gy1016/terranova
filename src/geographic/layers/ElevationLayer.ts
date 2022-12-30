@@ -13,6 +13,7 @@ interface ElevationLayerConfig {
   level?: number;
   terrainAddress?: string;
   tileAddress?: string | string[];
+  exaggerationFactor?: number;
 }
 
 export class ElevationLayer extends Layer {
@@ -21,6 +22,7 @@ export class ElevationLayer extends Layer {
 
   private _terrainAddress: string;
   private _tileAddress: string | string[];
+  private _exaggerationFactor: number = 1;
   private _isLercLoad: boolean = false;
   private _lruCache: LRU<string, Terrain> = new LRU(50);
   private _oneFrameRowRecords: Record<number, boolean>;
@@ -29,9 +31,12 @@ export class ElevationLayer extends Layer {
   constructor(engine: Engine, config: ElevationLayerConfig = {}) {
     super(engine);
 
-    const { terrainAddress, tileAddress } = config;
+    const { terrainAddress, tileAddress, exaggerationFactor } = config;
     this._terrainAddress = terrainAddress ? terrainAddress : TERRAIN_SERVICE;
     this._tileAddress = tileAddress ? tileAddress : TILE_SERVICE_MAP["Google"];
+    if (exaggerationFactor !== undefined) {
+      this._exaggerationFactor = exaggerationFactor;
+    }
     Lerc.load({
       locateFile: () => {
         return LERC_WASM;
@@ -135,8 +140,9 @@ export class ElevationLayer extends Layer {
   async _refresh() {
     if (this._isLercLoad === false) return;
     const terrainAddress = this._terrainAddress;
-    let tileAddress: string;
+    const exaggerationFactor = this._exaggerationFactor;
 
+    let tileAddress: string;
     let terrainUrl: string;
     let tileUrl: string;
 
@@ -157,7 +163,7 @@ export class ElevationLayer extends Layer {
       terrain.width = result.width;
       terrain.height = result.height;
       // 根据高度图生成格网
-      terrain._generateVertex(heightmap);
+      terrain._generateVertex(heightmap, exaggerationFactor);
 
       // 根据瓦片生成材质
       tileUrl = this._initUrl(tileAddress, terrain);
