@@ -12,6 +12,7 @@ export class Terrain {
   level: number;
   row: number;
   col: number;
+  key: string;
   width: number;
   height: number;
   geoExtension: GeoExtension;
@@ -22,6 +23,8 @@ export class Terrain {
     this.level = level;
     this.row = row;
     this.col = col;
+    // TODO: 这写的什么垃圾，但是我也懒得改
+    this.key = Tile.generateKey(level, row, col);
 
     const extension = Tile.gridToWebMercator(this.level, this.row, this.col);
     this.geoExtension = new GeoExtension(
