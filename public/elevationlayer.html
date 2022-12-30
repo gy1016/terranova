@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #gy {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gy"> your browser not support canvas </canvas>
+    <script type="module">
+      import { Engine, ElevationLayer, Logger } from "./index.esm.js";
+
+      Logger.enable();
+
+      const whuer3d = new Engine("gy");
+      const elevationLayer = new ElevationLayer(whuer3d, {
+        terrainAddress:
+          "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer/tile/level/row/col",
+        tileAddress: "https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/level/row/col",
+      });
+
+      whuer3d.scene.addLayer(elevationLayer);
+      whuer3d.run();
+    </script>
+  </body>
+</html>
