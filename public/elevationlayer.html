@@ -31,11 +31,7 @@
       Logger.enable();
 
       const whuer3d = new Engine("gy");
-      const elevationLayer = new ElevationLayer(whuer3d, {
-        terrainAddress:
-          "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer/tile/level/row/col",
-        tileAddress: "https://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/level/row/col",
-      });
+      const elevationLayer = new ElevationLayer(whuer3d);
 
       whuer3d.scene.addLayer(elevationLayer);
       whuer3d.run();

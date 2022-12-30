@@ -2,27 +2,33 @@ import { Engine, ImageMaterial, Shader } from "../../core";
 import { Terrain } from "../Terrain";
 import { Layer } from "./Layer";
 import { LRU } from "../LRU";
+import { TERRAIN_SERVICE, TILE_SERVICE_MAP, LERC_WASM } from "../../config";
 import * as Lerc from "lerc";
 
 interface ElevationLayerConfig {
-  terrainAddress: string;
-  tileAddress: string;
+  level?: number;
+  terrainAddress?: string;
+  tileAddress?: string | string[];
 }
 
 export class ElevationLayer extends Layer {
+  level: number;
   terrains: Terrain[] = [];
+
   private _terrainAddress: string;
-  private _tileAddress: string;
+  private _tileAddress: string | string[];
   private _isLercLoad: boolean = false;
   private _lruCache: LRU<string, Terrain> = new LRU(10);
 
-  constructor(engine: Engine, config: ElevationLayerConfig) {
+  constructor(engine: Engine, config: ElevationLayerConfig = {}) {
     super(engine);
-    this._terrainAddress = config.terrainAddress;
-    this._tileAddress = config.tileAddress;
+
+    const { terrainAddress, tileAddress } = config;
+    this._terrainAddress = terrainAddress ? terrainAddress : TERRAIN_SERVICE;
+    this._tileAddress = tileAddress ? tileAddress : TILE_SERVICE_MAP["Google"];
     Lerc.load({
       locateFile: () => {
-        return "https://unpkg.com/lerc@4.0.1/lerc-wasm.wasm";
+        return LERC_WASM;
       },
     }).then(() => {
       this._isLercLoad = true;
@@ -32,7 +38,12 @@ export class ElevationLayer extends Layer {
   async _refresh() {
     if (this._isLercLoad === false) return;
     const terrainAddress = this._terrainAddress;
-    const tileAddress = this._tileAddress;
+    let tileAddress: string;
+    if (this._tileAddress instanceof Array) {
+      tileAddress = this._tileAddress[Math.floor(this._tileAddress.length * Math.random())];
+    } else {
+      tileAddress = this._tileAddress;
+    }
     let terrainUrl: string;
     let tileUrl: string;
 
