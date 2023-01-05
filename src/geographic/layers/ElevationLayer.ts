@@ -137,6 +137,7 @@ export class ElevationLayer extends Layer {
     return new Terrain(this.engine, this.level, row, col);
   }
 
+  // 生成可见地形的格网和材质
   async _refresh() {
     if (this._isLercLoad === false) return;
     const terrainAddress = this._terrainAddress;
@@ -147,7 +148,9 @@ export class ElevationLayer extends Layer {
     let tileUrl: string;
 
     for (const terrain of this.terrains) {
-      if (this._lruCache.get(terrain.key)) continue;
+      if (this._lruCache.get(terrain.key)) {
+        continue;
+      }
 
       if (this._tileAddress instanceof Array) {
         tileAddress = this._tileAddress[Math.floor(this._tileAddress.length * Math.random())];
@@ -155,7 +158,9 @@ export class ElevationLayer extends Layer {
         tileAddress = this._tileAddress;
       }
 
+      // ! 这里串行没必要
       // 生成高度图的资源URL
+      this._lruCache.put(terrain.key, terrain);
       terrainUrl = this._initUrl(terrainAddress, terrain);
       const arrayBuffer = await fetch(terrainUrl).then((response) => response.arrayBuffer());
       const result = Lerc.decode(arrayBuffer);
@@ -169,14 +174,6 @@ export class ElevationLayer extends Layer {
       tileUrl = this._initUrl(tileAddress, terrain);
       const material = new ImageMaterial(this.engine, Shader.find("tile"), { url: tileUrl, flipY: true });
       terrain.material = material;
-      this._lruCache.put(terrain.key, terrain);
-    }
-
-    for (let i = 0; i < 2; ++i) {
-      for (let j = 0; j < 2; ++j) {
-        const terrain = new Terrain(this.engine, 1, i, j);
-        if (this._lruCache.get(terrain.key)) continue;
-      }
     }
   }
 
@@ -194,7 +191,7 @@ export class ElevationLayer extends Layer {
     const terrains = this.terrains;
     for (let i = 0; i < terrains.length; ++i) {
       const { mesh, material } = terrains[i];
-      if (!material) continue;
+      if (!material || !mesh) continue;
       material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
       program.bind();
