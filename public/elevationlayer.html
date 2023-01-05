@@ -31,7 +31,9 @@
       Logger.enable();
 
       const whuer3d = new Engine("gy");
-      const elevationLayer = new ElevationLayer(whuer3d);
+      const elevationLayer = new ElevationLayer(whuer3d, {
+        exaggerationFactor: 30,
+      });
 
       whuer3d.scene.addLayer(elevationLayer);
       whuer3d.run();
