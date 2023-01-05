@@ -158,22 +158,24 @@ export class ElevationLayer extends Layer {
         tileAddress = this._tileAddress;
       }
 
-      // ! 这里串行没必要
       // 生成高度图的资源URL
       this._lruCache.put(terrain.key, terrain);
       terrainUrl = this._initUrl(terrainAddress, terrain);
-      const arrayBuffer = await fetch(terrainUrl).then((response) => response.arrayBuffer());
-      const result = Lerc.decode(arrayBuffer);
-      const heightmap = result.pixels[0];
-      terrain.width = result.width;
-      terrain.height = result.height;
-      // 根据高度图生成格网
-      terrain._generateVertex(heightmap, exaggerationFactor);
+      fetch(terrainUrl)
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) => {
+          const result = Lerc.decode(arrayBuffer);
+          const heightmap = result.pixels[0];
+          terrain.width = result.width;
+          terrain.height = result.height;
+          // 根据高度图生成格网
+          terrain._generateVertex(heightmap, exaggerationFactor);
 
-      // 根据瓦片生成材质
-      tileUrl = this._initUrl(tileAddress, terrain);
-      const material = new ImageMaterial(this.engine, Shader.find("tile"), { url: tileUrl, flipY: true });
-      terrain.material = material;
+          // 根据瓦片生成材质
+          tileUrl = this._initUrl(tileAddress, terrain);
+          const material = new ImageMaterial(this.engine, Shader.find("tile"), { url: tileUrl, flipY: true });
+          terrain.material = material;
+        });
     }
   }
 
