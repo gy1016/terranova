@@ -28,7 +28,7 @@
     <script type="module">
       import { Engine, HeatMapLayer, Logger, Vector3 } from "./index.esm.js";
 
-      Logger.enable();
+      // Logger.enable();
 
       const whuer3d = new Engine(
         "gy",
@@ -43,18 +43,33 @@
         radius: 10,
         tileSize: 256,
         gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
-        maxIntensity: 50,
+        maxIntensity: 999,
       });
+
       const heatPoints = [];
-      for (let i = 0; i < 10000; i++)
-        heatPoints.push({
-          lat: 29.58 + (Math.random() * 5) / 100,
-          lng: 113.41 + (Math.random() * 8) / 100,
-          weight: Math.random() * 30,
+      fetch("http://121.199.160.202/json/trace.json")
+        .then((res) => res.json())
+        .then((data) => {
+          for (let points of data) {
+            points.map((point) => {
+              heatPoints.push({
+                lat: point.coord[1],
+                lng: point.coord[0],
+                weight: point.elevation < 0 ? 1 : point.elevation,
+              });
+            });
+          }
+          test.addPoints(heatPoints);
+          whuer3d.scene.addLayer(test);
+          whuer3d.run();
         });
-      test.addPoints(heatPoints);
-      whuer3d.scene.addLayer(test);
-      whuer3d.run();
+
+      // for (let i = 0; i < 10000; i++)
+      //   heatPoints.push({
+      //     lat: 29.58 + (Math.random() * 5) / 100,
+      //     lng: 113.41 + (Math.random() * 8) / 100,
+      //     weight: Math.random() * 30,
+      //   });
     </script>
   </body>
 </html>
