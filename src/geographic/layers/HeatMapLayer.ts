@@ -3,17 +3,29 @@ import { Engine, Logger, isUint8, ImageMaterial, Shader, TextureFormat } from ".
 import { Tile, TileCoord } from "./Tile";
 import { Layer } from "./Layer";
 
+/**
+ * 热力图层配置
+ */
 interface HeatMapLayerConfig {
+  // 热力点位影响半径
   radius: number;
+  // 生成热力瓦片的大小
   tileSize: number;
+  // 热力图的色带设置
   gradient: number[][] | string[];
+  // 热力点位中最大热力值
   maxIntensity: number;
 }
 
-// lat, lng, weight
+/**
+ * 热力点位属性
+ */
 interface HeatPoint {
+  // 热力点纬度
   lat: number;
+  // 热力点经度
   lng: number;
+  // 热力点热力值
   weight: number;
 }
 
@@ -24,11 +36,17 @@ export class HeatMapLayer extends Layer {
   static heatmapWorker: Worker = new Worker("./wasm/heat-map.worker.js");
   static _count: number = 1;
 
+  // 热力图层id
   id: number;
+  // 热力点位数组
   points: HeatPoint[] = [];
+  // 热力点影响半径
   radius: number;
-  tileSize: number;
+  // 热力瓦片大小
+  tileSize: number = 256;
+  // 热力图色带
   gradient: number[][] | string[];
+  // 热力图最大热力值
   maxIntensity: number;
   tiles: Map<string, Tile>;
   _lastZoom: number = -1;
@@ -63,6 +81,11 @@ export class HeatMapLayer extends Layer {
     });
   }
 
+  /**
+   * 继承Layer类创建的热力图层
+   * @param engine 引擎实例
+   * @param config 热力图层配置
+   */
   constructor(engine: Engine, config: HeatMapLayerConfig) {
     super(engine);
     this.id = HeatMapLayer._count++;
