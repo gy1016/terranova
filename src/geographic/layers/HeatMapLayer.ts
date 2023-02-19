@@ -2,6 +2,7 @@ import { Geodetic2 } from "../../math";
 import { Engine, Logger, isUint8, ImageMaterial, Shader, TextureFormat } from "../../core";
 import { Tile, TileCoord } from "./Tile";
 import { Layer } from "./Layer";
+import TaskProcessor from "../../wasm/TaskProcessor";
 
 /**
  * 热力图层配置
@@ -14,7 +15,7 @@ interface HeatMapLayerConfig {
   // 热力图的色带设置
   gradient: number[][] | string[];
   // 热力点位中最大热力值
-  maxIntensity: number;
+  maxHeat: number;
 }
 
 /**
@@ -26,18 +27,10 @@ interface HeatPoint {
   // 热力点经度
   lng: number;
   // 热力点热力值
-  weight: number;
+  heat: number;
 }
 
 export class HeatMapLayer extends Layer {
-  static heatMapLayers: Record<number, HeatMapLayer> = Object.create(null);
-  static workerLoaded: boolean = false;
-  static retryLimit: number = 10;
-  static heatmapWorker: Worker = new Worker("./wasm/heat-map.worker.js");
-  static _count: number = 1;
-
-  // 热力图层id
-  id: number;
   // 热力点位数组
   points: HeatPoint[] = [];
   // 热力点影响半径
@@ -47,9 +40,13 @@ export class HeatMapLayer extends Layer {
   // 热力图色带
   gradient: number[][] | string[];
   // 热力图最大热力值
-  maxIntensity: number;
+  maxHeat: number;
+  // 缓存的热力瓦片
   tiles: Map<string, Tile>;
+  // 用于相机层级判断
   _lastZoom: number = -1;
+  // 子线程实例
+  processor: TaskProcessor = new TaskProcessor("./wasm/heat-map.worker.js");
 
   /**
    * Convert the incoming color band to an array of floating point types.
@@ -88,105 +85,75 @@ export class HeatMapLayer extends Layer {
    */
   constructor(engine: Engine, config: HeatMapLayerConfig) {
     super(engine);
-    this.id = HeatMapLayer._count++;
-    const { radius, gradient, maxIntensity, tileSize } = config;
+    const { radius, gradient, maxHeat, tileSize } = config;
     this.radius = radius;
     this.gradient = gradient;
-    this.maxIntensity = maxIntensity;
+    this.maxHeat = maxHeat;
     this.tileSize = tileSize;
-
-    HeatMapLayer.heatMapLayers[this.id] = this;
-
-    this.initialWorker();
-    this.send("initHeatMapMiddleware", {
+    this.processor.scheduleTask("initHeatMapMiddleware", {
       ...config,
       zoom: engine.scene.camera.level,
       gradient: HeatMapLayer.parseGradient(gradient),
     });
   }
 
-  initialWorker() {
-    HeatMapLayer.heatmapWorker.onmessage = (ev) => {
-      if (!ev || !ev.data) return Logger.error("Bad event from worker", ev);
-      const [id, cmd, data] = ev.data;
-      // 如果对应id的热力图层存在则执行worker中传入的指令
-      if (HeatMapLayer.heatMapLayers[id]) HeatMapLayer.heatMapLayers[id].onMessage(cmd, data);
-      // 其余指令传入的id都为0
-      else if (id === 0) {
-        // 通知worker加载成功
-        if (cmd === "workerLoaded") {
-          HeatMapLayer.workerLoaded = true;
-          Logger.info("heatmapWorker was loaded!");
-        } else if (cmd === "debug") {
-          Logger.debug("heatmapWorker:", data);
-        } else if (cmd === "error") {
-          Logger.error("WORKER ERROR!", data);
-        } else {
-          // 如果id为0则认为所有heatmapLayer都要执行指令
-          Object.values(HeatMapLayer.heatMapLayers).forEach((layer) => layer.onMessage(cmd, data));
-        }
-      } else {
-        Logger.error(`There is no HeatmapLayer with id "${id}". {cmd: ${cmd}, data:${JSON.stringify(data)} }`);
-      }
-    };
-  }
-
+  /**
+   * 通知子线程设置热力点影响半径
+   * @param radius 热力点影响半径
+   */
   setRadius(radius: number) {
     this.radius = radius;
-    this.send("setRadius", radius);
+    this.processor.scheduleTask("setRadius", radius);
   }
 
-  setMaxIntensity(maxIntensity: number) {
+  /**
+   * 通知子线程设置最大热力值
+   * @param maxHeat 最大热力值
+   */
+  setMaxHeat(maxHeat: number) {
     // 如果传入的maxIntensity小于0，则将其设置为-1，然后会使用点位中的最大热力值为上限
-    if (maxIntensity <= 0) maxIntensity = -1;
-    this.maxIntensity = maxIntensity;
-    this.send("setMaxIntensity", maxIntensity);
+    if (maxHeat <= 0) maxHeat = -1;
+    this.maxHeat = maxHeat;
+    this.processor.scheduleTask("setMaxHeat", maxHeat);
   }
 
+  /**
+   * 通知子线程设置热力图层级
+   * @param zoom 热力图层级
+   */
   setZoom(zoom: number) {
-    this.send("setZoom", zoom);
+    this.processor.scheduleTask("setZoom", zoom);
   }
 
+  /**
+   * 通知子线程设置色带
+   * @param gradient 热力图色带
+   */
   setGradient(gradient: string[] | number[][]) {
     this.gradient = gradient;
     const postGradient = HeatMapLayer.parseGradient(gradient);
-    this.send("setGradient", postGradient);
+    this.processor.scheduleTask("setGradient", postGradient);
   }
 
-  // 根据所有热力点位生成对应层级的瓦片，会清空当前tiles的map容器
-  _accordPointsGenerateTiles(points: HeatPoint[], zoom: number): number[][] {
-    const postPoints: number[][] = [[points[0].lat, points[0].lng, points[0].weight]];
-
-    // ! 这里应该会被GC吧，这里欠缺考虑
-    this.tiles = new Map();
-
-    for (const point of points) {
-      // 先把所有点都推进结果数组
-      postPoints.push([point.lat, point.lng, point.weight]);
-
-      // ! 这里要求传入的热力点位都是经纬度格式
-      const geodetic2 = new Geodetic2(point.lng, point.lat);
-      const mercator = geodetic2.toMercator();
-      const curTileRowAndCol = Tile.getTileRowAndCol(mercator.x, mercator.y, zoom);
-      const key = Tile.generateKey(zoom, curTileRowAndCol.row, curTileRowAndCol.col);
-
-      // 如果该点所在的瓦片已经存在了则直接下一个点位
-      if (this.tiles.has(key)) continue;
-
-      const tile = new Tile(this.engine, this.engine.scene.camera.level, curTileRowAndCol.row, curTileRowAndCol.col);
-      this.tiles.set(key, tile);
-    }
-
-    return postPoints;
-  }
-
+  /**
+   * 通知子线程添加热力点位信息
+   * @param points 热力点位信息
+   */
   addPoints(points: HeatPoint[]) {
     this.points = this.points.concat(points);
-    this.send("addPoints", this._accordPointsGenerateTiles(this.points, this.engine.scene.camera.level));
+    this.processor.scheduleTask(
+      "addPoints",
+      this._accordPointsGenerateTiles(this.points, this.engine.scene.camera.level)
+    );
   }
 
+  /**
+   * 根据行列号，通知子线程创建瓦片
+   * @param x 瓦片列号
+   * @param y 瓦片行号
+   */
   createTile(x: number, y: number) {
-    this.send("createTile", { x, y });
+    this.processor.scheduleTask("createTile", { x, y });
   }
 
   pointsAdded({ pointsLength, heater }: { pointsLength: number; heater: number }) {
@@ -215,6 +182,33 @@ export class HeatMapLayer extends Layer {
   radiusSeted(radius: number) {
     Logger.info(`The influence radius of the hot spot is set to ${radius}`);
     this.updateTiles();
+  }
+
+  // 根据所有热力点位生成对应层级的瓦片，会清空当前tiles的map容器
+  _accordPointsGenerateTiles(points: HeatPoint[], zoom: number): number[][] {
+    const postPoints: number[][] = [[points[0].lat, points[0].lng, points[0].heat]];
+
+    // ! 这里应该会被GC吧，这里欠缺考虑
+    this.tiles = new Map();
+
+    for (const point of points) {
+      // 先把所有点都推进结果数组
+      postPoints.push([point.lat, point.lng, point.heat]);
+
+      // ! 这里要求传入的热力点位都是经纬度格式
+      const geodetic2 = new Geodetic2(point.lng, point.lat);
+      const mercator = geodetic2.toMercator();
+      const curTileRowAndCol = Tile.getTileRowAndCol(mercator.x, mercator.y, zoom);
+      const key = Tile.generateKey(zoom, curTileRowAndCol.row, curTileRowAndCol.col);
+
+      // 如果该点所在的瓦片已经存在了则直接下一个点位
+      if (this.tiles.has(key)) continue;
+
+      const tile = new Tile(this.engine, this.engine.scene.camera.level, curTileRowAndCol.row, curTileRowAndCol.col);
+      this.tiles.set(key, tile);
+    }
+
+    return postPoints;
   }
 
   // 瓦片创建之后实例化材质
