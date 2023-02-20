@@ -1,16 +1,24 @@
 import { defer } from "./utils";
 
 export default class TaskProcessor {
+  // 子线程实例
   private _worker: Worker;
+  // 子线程文件路径
   private _workerPth: string;
+  // 最大活跃的任务数
   private _maximumActiveTasks: number;
   // 当前活跃的任务数
   private _activeTasks: number = 0;
   // 当前任务的Id，与子线程通过该字段联系
   private _taskId: number = 0;
   // 任务返回的deferred集合
-  private _deferreds: Record<number, ReturnType<typeof defer>>;
+  private _deferreds: Record<number, ReturnType<typeof defer>> = Object.create(null);
 
+  /**
+   * 创建Worker实例，并自动处理子线程发过来的事件
+   * @param processor TaskProcessor实例
+   * @returns Worker实例
+   */
   private static createWorker(processor: TaskProcessor) {
     const worker = new Worker(processor._workerPth);
 
@@ -68,15 +76,14 @@ export default class TaskProcessor {
    * 用于在主线程中处理子线程传过来的信息
    * @param data 子线程传递给主线程的数据
    */
-  completeTask(data: { id: number; cmd: string; transferableObjects: unknown; error: unknown }) {
+  completeTask(data: { id: number; cmd: string; transferableObjects: unknown }) {
     --this._activeTasks;
 
     const id = data.id;
     const deferred = this._deferreds[id];
 
-    if (data.error) {
-      const error = data.error;
-      deferred.reject(error);
+    if (data.cmd == "error") {
+      deferred.reject(data);
     } else {
       deferred.resolve(data);
     }

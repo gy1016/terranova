@@ -5,7 +5,7 @@ import { Layer } from "./Layer";
 import TaskProcessor from "../../wasm/TaskProcessor";
 
 /**
- * 热力图层配置
+ * 热力图层配置接口
  */
 interface HeatMapLayerConfig {
   // 热力点位影响半径
@@ -19,7 +19,7 @@ interface HeatMapLayerConfig {
 }
 
 /**
- * 热力点位属性
+ * 热力点位属性接口
  */
 interface HeatPoint {
   // 热力点纬度
@@ -43,15 +43,16 @@ export class HeatMapLayer extends Layer {
   maxHeat: number;
   // 缓存的热力瓦片
   tiles: Map<string, Tile>;
-  // 用于相机层级判断
-  _lastZoom: number = -1;
   // 子线程实例
   processor: TaskProcessor = new TaskProcessor("./wasm/heat-map.worker.js");
 
+  // 用于相机层级判断
+  private _lastZoom: number = -1;
+
   /**
-   * Convert the incoming color band to an array of floating point types.
-   * @param gradient Color ramp represented by array of strings or array of floats
-   * @returns Color ramp represented by array of floats
+   * 将传入的色带转换为浮点型数组。
+   * @param gradient 由字符串数组或浮点数组表示的颜色渐变
+   * @returns 由浮点数组表示的颜色渐变
    */
   static parseGradient(gradient: string[] | number[][]): number[][] {
     return gradient.map((color) => {
@@ -103,7 +104,11 @@ export class HeatMapLayer extends Layer {
    */
   setRadius(radius: number) {
     this.radius = radius;
-    this.processor.scheduleTask("setRadius", radius);
+    const promise = this.processor.scheduleTask("setRadius", radius);
+    promise.then((data) => {
+      Logger.info(data);
+      this.updateTiles();
+    });
   }
 
   /**
@@ -111,10 +116,12 @@ export class HeatMapLayer extends Layer {
    * @param maxHeat 最大热力值
    */
   setMaxHeat(maxHeat: number) {
-    // 如果传入的maxIntensity小于0，则将其设置为-1，然后会使用点位中的最大热力值为上限
-    if (maxHeat <= 0) maxHeat = -1;
     this.maxHeat = maxHeat;
-    this.processor.scheduleTask("setMaxHeat", maxHeat);
+    const promise = this.processor.scheduleTask("setMaxHeat", maxHeat);
+    promise.then((data) => {
+      Logger.info(data);
+      this.updateTiles();
+    });
   }
 
   /**
@@ -122,7 +129,14 @@ export class HeatMapLayer extends Layer {
    * @param zoom 热力图层级
    */
   setZoom(zoom: number) {
-    this.processor.scheduleTask("setZoom", zoom);
+    const promise = this.processor.scheduleTask("setZoom", zoom);
+    promise.then((data) => {
+      Logger.info(data);
+      // zoom变了需要重新计算一下需要生成的瓦片
+      this._accordPointsGenerateTiles(this.points, zoom);
+      // 然后通知更新瓦片
+      this.updateTiles();
+    });
   }
 
   /**
@@ -132,7 +146,11 @@ export class HeatMapLayer extends Layer {
   setGradient(gradient: string[] | number[][]) {
     this.gradient = gradient;
     const postGradient = HeatMapLayer.parseGradient(gradient);
-    this.processor.scheduleTask("setGradient", postGradient);
+    const promise = this.processor.scheduleTask("setGradient", postGradient);
+    promise.then((data) => {
+      Logger.info(data);
+      this.updateTiles();
+    });
   }
 
   /**
@@ -141,10 +159,14 @@ export class HeatMapLayer extends Layer {
    */
   addPoints(points: HeatPoint[]) {
     this.points = this.points.concat(points);
-    this.processor.scheduleTask(
+    const promise = this.processor.scheduleTask(
       "addPoints",
       this._accordPointsGenerateTiles(this.points, this.engine.scene.camera.level)
     );
+    promise.then((data) => {
+      Logger.info(data);
+      this.updateTiles();
+    });
   }
 
   /**
@@ -153,40 +175,39 @@ export class HeatMapLayer extends Layer {
    * @param y 瓦片行号
    */
   createTile(x: number, y: number) {
-    this.processor.scheduleTask("createTile", { x, y });
+    const promise = this.processor.scheduleTask("createTile", { x, y });
+    promise.then((data: { transferableObjects: { tileInfo: TileCoord & { base64: string } } }) => {
+      Logger.info(data);
+      const tileInfo = data.transferableObjects.tileInfo;
+      // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
+      const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
+      if (!tile) return;
+      tile.material = new ImageMaterial(this.engine, Shader.find("tile"), {
+        flipY: true,
+        base64: tileInfo.base64,
+        textureFormat: TextureFormat.R8G8B8A8,
+      });
+    });
   }
 
-  pointsAdded({ pointsLength, heater }: { pointsLength: number; heater: number }) {
-    Logger.info(`${pointsLength} points added. The heater pixel is ${heater}.`);
-    this.updateTiles();
+  /**
+   * 根据瓦片字典创建热力图瓦片
+   */
+  updateTiles() {
+    for (const tile of this.tiles.values()) {
+      this.createTile(tile.col, tile.row);
+    }
   }
 
-  gradientSeted(length: number) {
-    Logger.info(`Gradient updated with ${length} color steps.`);
-    this.updateTiles();
-  }
-
-  zoomSeted(zoom: number) {
-    Logger.info(`The zoom in WASM is successfully set to ${zoom}.`);
-    // zoom变了需要重新计算一下需要生成的瓦片
-    this._accordPointsGenerateTiles(this.points, zoom);
-    // 然后通知更新瓦片
-    this.updateTiles();
-  }
-
-  maxIntensitySeted(maxIntensity: number) {
-    Logger.info(`The maximum density is set to ${maxIntensity}.`);
-    this.updateTiles();
-  }
-
-  radiusSeted(radius: number) {
-    Logger.info(`The influence radius of the hot spot is set to ${radius}`);
-    this.updateTiles();
-  }
-
-  // 根据所有热力点位生成对应层级的瓦片，会清空当前tiles的map容器
+  // TODO: 这个循环太费时间了，这个考虑怎么处理
+  /**
+   * 根据所有热力点位生成对应层级的瓦片，会清空当前tiles的map容器
+   * @param points 热力点位信息数组
+   * @param zoom 需要生成的层级
+   * @returns 经过组织后的热力点位数组
+   */
   _accordPointsGenerateTiles(points: HeatPoint[], zoom: number): number[][] {
-    const postPoints: number[][] = [[points[0].lat, points[0].lng, points[0].heat]];
+    const postPoints: number[][] = [];
 
     // ! 这里应该会被GC吧，这里欠缺考虑
     this.tiles = new Map();
@@ -209,44 +230,6 @@ export class HeatMapLayer extends Layer {
     }
 
     return postPoints;
-  }
-
-  // 瓦片创建之后实例化材质
-  tileCreated(tileInfo: TileCoord & { base64: string }) {
-    Logger.info(`I will create the tile row ${tileInfo.row}, col: ${tileInfo.col} and level: ${tileInfo.level}`);
-    // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
-    const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
-    if (!tile) return;
-    tile.material = new ImageMaterial(this.engine, Shader.find("tile"), {
-      flipY: true,
-      base64: tileInfo.base64,
-      textureFormat: TextureFormat.R8G8B8A8,
-    });
-  }
-
-  updateTiles() {
-    for (const tile of this.tiles.values()) {
-      this.send("createTile", { x: tile.col, y: tile.row });
-    }
-  }
-
-  // 去执行对应的命令
-  onMessage(command: string, data: unknown) {
-    if (this[command]) this[command](data);
-    else if (command === "debug") Logger.debug(data);
-    else if (command === "info") Logger.info(data);
-    else Logger.error(`The HeatmapLayer command "${command}" does not exists.`);
-  }
-
-  send<T>(command: string, data: T, retryCount = 0) {
-    if (retryCount > HeatMapLayer.retryLimit) {
-      return Logger.error(`Command ${command} timeout.`);
-    }
-    if (HeatMapLayer.workerLoaded) {
-      HeatMapLayer.heatmapWorker.postMessage([this.id, command, data]);
-    } else {
-      setTimeout(this.send.bind(this, command, data, ++retryCount), 300);
-    }
   }
 
   // 热力图瓦片我们全部渲染，可能也没有几张

@@ -626,9 +626,9 @@ import { HEATMAP_WASM } from "../config/wasm";
 
 // 初始化一些变量
 const go = new Go();
-let wasmLoaded = false;
 const cmdQueue = [];
-const middlewares = {};
+let wasmLoaded = false;
+let middleware;
 
 // 请求wasm文件并流失编译
 WebAssembly.instantiateStreaming(fetch(HEATMAP_WASM), go.importObject).then((result) => {
@@ -640,108 +640,119 @@ WebAssembly.instantiateStreaming(fetch(HEATMAP_WASM), go.importObject).then((res
 
 // 热力图中间件
 class HeatmapMiddleware {
-  constructor(id, config) {
-    const { tileSize, radius, zoom, maxIntensity, gradient } = config;
-    this.id = id;
+  constructor(config) {
+    // 这个id暂时写死惹
+    this.id = 1;
+    const { tileSize, radius, zoom, maxHeat, gradient } = config;
     this.tileSize = tileSize;
     this.setZoom(zoom);
     this.setRadius(radius);
-    this.setMaxIntensity(maxIntensity);
+    this.setMaxHeat(maxHeat);
     this.setGradient(gradient);
   }
 
-  get isReady() {
-    return wasmLoaded;
-  }
-
-  addPoints(points) {
-    this.debug(`Adding ${points.length} points...`);
+  /**
+   * 利用Wasm内部的函数，向内存当中添加热力点数组
+   * @param {number} taskId 当前任务的编号，从主线程传过来的
+   * @param {float[]} points 热力点位数组
+   */
+  addPoints(taskId, points) {
     const maxHeater = addPoints(this.id, points);
-    this.send("pointsAdded", { pointsLength: points.length, heater: maxHeater });
+    this.send(taskId, "pointsAdded", { pointsLength: points.length, heater: maxHeater });
   }
 
-  setGradient(gradient) {
+  /**
+   * 利用Wasm内部的函数，设置热力图色带
+   * @param {number} taskId 当前任务编号
+   * @param {string[]} gradient 主线程传过来的热力图色带
+   */
+  setGradient(taskId, gradient) {
     setGradient(this.id, gradient);
     this.gradient = gradient;
-    this.send("gradientSeted", gradient.length);
+    this.send(taskId, "gradientSeted", gradient.length);
   }
 
-  setMaxIntensity(maxIntensity) {
+  /**
+   * 利用Wasm内部的函数，设置热力图的最大密度
+   * @param {number} taskId 当前任务编号
+   * @param {number} maxIntensity 最大热力密度
+   */
+  setMaxIntensity(taskId, maxIntensity) {
     setMaxIntensity(this.id, maxIntensity);
     this.maxIntensity = maxIntensity;
-    this.send("maxIntensitySeted", maxIntensity);
+    this.send(taskId, "maxIntensitySeted", maxIntensity);
   }
 
-  setRadius(radius) {
+  /**
+   * 利用Wasm内部的函数，设置热力点的影响半径
+   * @param {number} taskId 当前任务编号
+   * @param {number} radius 热力点影响半径
+   */
+  setRadius(taskId, radius) {
     setRadius(this.id, radius);
     this.radius = radius;
-    this.send("radiusSeted", radius);
+    this.send(taskId, "radiusSeted", radius);
   }
 
-  setZoom(zoom) {
+  /**
+   * 利用Wasm内部的函数，设置热力图的层级
+   * @param {number} taskId 当前任务编号
+   * @param {number} zoom 热力图层级
+   */
+  setZoom(taskId, zoom) {
     setZoom(this.id, zoom);
     this.zoom = zoom;
-    this.send("zoomSeted", zoom);
+    this.send(taskId, "zoomSeted", zoom);
   }
 
-  createTile({ x, y }) {
-    if (this.isReady) {
-      this.debug(`Creating tile(${this.tileSize}) at ${x},${y}. Zoom: ${this.zoom}`);
-      const tile = createTile(this.id, x, y, this.tileSize);
-      this.send("tileCreated", { row: y, col: x, level: this.zoom, base64: tile });
-    } else {
-      this.debug(`Because WASM is not compiled, the tile creation fails.`);
-    }
+  /**
+   * 根据瓦片坐标，调用Wasm内部的函数，生成热力瓦片
+   * @param {number} taskId 当前任务编号
+   * @param {Object} param1
+   */
+  createTile(taskId, { x, y }) {
+    const tile = createTile(this.id, x, y, this.tileSize);
+    this.send(taskId, "tileCreated", { row: y, col: x, level: this.zoom, base64: tile });
   }
 
-  send(command, data) {
-    postMessage([this.id, command, data]);
+  /**
+   * 子线程向主线程传递任务
+   * @param {number} id 任务id
+   * @param {string} cmd 任务名称
+   * @param {unknown} transferableObjects 任务参数
+   */
+  send(id, cmd, transferableObjects) {
+    postMessage({ id, cmd, transferableObjects });
   }
 
-  onMessage(command, data) {
-    if (this[command]) this[command](data);
+  /**
+   * 执行主线程传递过来的任务
+   * @param {number} id 当前任务的id
+   * @param {string} cmd 当前任务的名称
+   * @param {unknown} transferableObjects 当前任务需要的参数
+   */
+  runTask(id, cmd, transferableObjects) {
+    if (this[cmd]) this[cmd](id, transferableObjects);
     else this.error(`The heatmap worker middleware command "${command}" does not exists.`);
-  }
-
-  debug(message) {
-    this.send("debug", message);
-  }
-
-  info(message) {
-    this.send("info", message);
-  }
-
-  error(message) {
-    this.send("error", message);
   }
 }
 
 // 处理cmd队列函数
 function walkCmdQueue() {
   while (cmdQueue.length > 0) {
-    const [id, cmd, data] = cmdQueue.shift();
+    const { id, cmd, transferableObjects } = cmdQueue.shift();
     if (cmd === "initHeatMapMiddleware") {
-      middlewares[id] = new HeatmapMiddleware(id, data);
+      middleware = new HeatmapMiddleware(transferableObjects);
     } else {
-      if (middlewares[id]) middlewares[id].onMessage(cmd, data);
-      else console.error(`There is no heatmap worker middleware with id "${id}" to "${cmd}".`);
+      middleware.runTask(id, cmd, transferableObjects);
     }
   }
 }
 
 // 监听信息，用于接收主线程中传过来的命令
 onmessage = (ev) => {
-  if (!ev || !ev.data) {
-    return postMessage([0, "error", "Bad event from host", ev.constructor.name]);
-  }
-  const [id, cmd, data] = ev.data;
-  if (id == undefined) {
-    postMessage([0, "error", `The Heatmap id is undefined for "${cmd}".`]);
-  } else {
-    cmdQueue.push([id, cmd, data]);
-    if (wasmLoaded) walkCmdQueue();
-  }
+  const { id, cmd, transferableObjects } = ev.data;
+  console.log(ev.data);
+  cmdQueue.push({ id, cmd, transferableObjects });
+  if (wasmLoaded) walkCmdQueue();
 };
-
-// 通知主线程worker加载了
-postMessage([0, "workerLoaded"]);

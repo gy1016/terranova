@@ -55,7 +55,7 @@
               heatPoints.push({
                 lat: point.coord[1],
                 lng: point.coord[0],
-                weight: point.elevation < 0 ? 1 : point.elevation,
+                heat: point.elevation < 0 ? 1 : point.elevation,
               });
             });
           }
