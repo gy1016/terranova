@@ -176,9 +176,9 @@ export class HeatMapLayer extends Layer {
    */
   createTile(x: number, y: number) {
     const promise = this.processor.scheduleTask("createTile", { x, y });
-    promise.then((data: { transferableObjects: { tileInfo: TileCoord & { base64: string } } }) => {
+    promise.then((data: { transferableObjects: TileCoord & { base64: string } }) => {
       Logger.info(data);
-      const tileInfo = data.transferableObjects.tileInfo;
+      const tileInfo = data.transferableObjects;
       // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
       const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
       if (!tile) return;

@@ -645,10 +645,10 @@ class HeatmapMiddleware {
     this.id = 1;
     const { tileSize, radius, zoom, maxHeat, gradient } = config;
     this.tileSize = tileSize;
-    this.setZoom(zoom);
-    this.setRadius(radius);
-    this.setMaxHeat(maxHeat);
-    this.setGradient(gradient);
+    this.zoom = zoom;
+    this.radius = radius;
+    this.maxHeat = maxHeat;
+    this.gradient = gradient;
   }
 
   /**
@@ -677,10 +677,10 @@ class HeatmapMiddleware {
    * @param {number} taskId 当前任务编号
    * @param {number} maxIntensity 最大热力密度
    */
-  setMaxIntensity(taskId, maxIntensity) {
-    setMaxIntensity(this.id, maxIntensity);
-    this.maxIntensity = maxIntensity;
-    this.send(taskId, "maxIntensitySeted", maxIntensity);
+  setMaxHeat(taskId, maxHeat) {
+    setMaxIntensity(this.id, maxHeat);
+    this.maxHeat = maxHeat;
+    this.send(taskId, "maxHeatSeted", maxHeat);
   }
 
   /**
@@ -743,6 +743,11 @@ function walkCmdQueue() {
     const { id, cmd, transferableObjects } = cmdQueue.shift();
     if (cmd === "initHeatMapMiddleware") {
       middleware = new HeatmapMiddleware(transferableObjects);
+      // 初次使用需要设定一下色带、半径和层级参数
+      setGradient(middleware.id, middleware.gradient);
+      setMaxIntensity(middleware.id, middleware.maxHeat);
+      setRadius(middleware.id, middleware.radius);
+      setZoom(middleware.id, middleware.zoom);
     } else {
       middleware.runTask(id, cmd, transferableObjects);
     }
