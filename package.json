@@ -6,7 +6,7 @@
   "description": "由武汉大学空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。",
   "homepage": "https://github.com/gy1016/whuer3d",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "keywords": [
     "gis",
