@@ -160,7 +160,7 @@ export class Scene {
       layers[i]._render(camera.level);
     }
 
-    atmosphere._render();
+    // atmosphere._render();
     background._render();
   }
 }
