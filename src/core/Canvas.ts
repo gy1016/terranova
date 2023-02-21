@@ -57,5 +57,9 @@ export class Canvas {
     this._canvas = canvas;
     this._width = width;
     this._height = height;
+    // TODO: 做法不够优雅
+    window.addEventListener("resize", () => {
+      this.resizeByClientSize();
+    });
   }
 }
