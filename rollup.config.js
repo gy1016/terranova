@@ -12,15 +12,15 @@ export default [
   {
     input: "./src/index.ts",
     output: [
-      {
-        dir: "dist",
-        format: "cjs",
-        entryFileNames: "[name].cjs.js",
-      },
+      // {
+      //   dir: "dist",
+      //   format: "cjs",
+      //   entryFileNames: "[name].cjs.js",
+      // },
       {
         dir: "dist",
         format: "esm",
-        entryFileNames: "[name].esm.js",
+        entryFileNames: "[name].js",
       },
     ],
     plugins: [
