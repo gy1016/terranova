@@ -26,20 +26,12 @@
   <body>
     <canvas id="gy"> your browser not support canvas </canvas>
     <script type="module">
-      import { Engine, HeatMapLayer, Logger, Vector3 } from "./index.esm.js";
+      import { Engine, HeatMapLayer, Vector3 } from "./index.js";
 
-      // Logger.enable();
-
-      const whuer3d = new Engine(
-        "gy",
-        {
-          cameraPos: new Vector3(0, 0, 6378137 * 3),
-        },
-        {
-          alpha: true,
-        }
-      );
-      const test = new HeatMapLayer(whuer3d, {
+      const whuer3d = new Engine("gy", {
+        cameraPos: new Vector3(0, 0, 6378137 * 3),
+      });
+      const heatLayer = new HeatMapLayer(whuer3d, {
         radius: 10,
         tileSize: 256,
         gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
@@ -47,29 +39,20 @@
       });
 
       const heatPoints = [];
-      fetch("http://121.199.160.202/json/trace.json")
+      fetch("http://121.199.160.202:9999/query")
         .then((res) => res.json())
-        .then((data) => {
-          for (let points of data) {
-            points.map((point) => {
-              heatPoints.push({
-                lat: point.coord[1],
-                lng: point.coord[0],
-                heat: point.elevation < 0 ? 1 : point.elevation,
-              });
+        .then(({ data }) => {
+          for (let point of data) {
+            heatPoints.push({
+              lat: point.lat,
+              lng: point.lng,
+              heat: point.heat,
             });
           }
-          test.addPoints(heatPoints);
-          whuer3d.scene.addLayer(test);
+          heatLayer.addPoints(heatPoints);
+          whuer3d.scene.addLayer(heatLayer);
           whuer3d.run();
         });
-
-      // for (let i = 0; i < 10000; i++)
-      //   heatPoints.push({
-      //     lat: 29.58 + (Math.random() * 5) / 100,
-      //     lng: 113.41 + (Math.random() * 8) / 100,
-      //     weight: Math.random() * 30,
-      //   });
     </script>
   </body>
 </html>
