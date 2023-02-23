@@ -7,7 +7,7 @@ import TaskProcessor from "../../wasm/TaskProcessor";
 /**
  * 热力图层配置接口
  */
-interface HeatMapLayerConfig {
+export interface HeatMapLayerConfig {
   // 热力点位影响半径
   radius: number;
   // 生成热力瓦片的大小
@@ -21,7 +21,7 @@ interface HeatMapLayerConfig {
 /**
  * 热力点位属性接口
  */
-interface HeatPoint {
+export interface HeatPoint {
   // 热力点纬度
   lat: number;
   // 热力点经度
@@ -44,6 +44,7 @@ export class HeatMapLayer extends Layer {
   // 缓存的热力瓦片
   tiles: Map<string, Tile>;
   // 子线程实例
+  // TODO: work文件的路径读取有问题
   processor: TaskProcessor = new TaskProcessor("./wasm/heat-map.worker.js");
 
   // 用于相机层级判断
