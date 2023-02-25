@@ -733,7 +733,7 @@ class HeatmapMiddleware {
    */
   runTask(id, cmd, transferableObjects) {
     if (this[cmd]) this[cmd](id, transferableObjects);
-    else this.error(`The heatmap worker middleware command "${command}" does not exists.`);
+    else console.error(`The worker middleware command "${cmd}" does not exists.`);
   }
 }
 
