@@ -44,8 +44,7 @@ export class HeatMapLayer extends Layer {
   // 缓存的热力瓦片
   tiles: Map<string, Tile>;
   // 子线程实例
-  // TODO: work文件的路径读取有问题
-  processor: TaskProcessor = new TaskProcessor("./wasm/heat-map.worker.js");
+  processor: TaskProcessor = new TaskProcessor("./wasm/heat-map.wasm.worker.js");
 
   // 用于相机层级判断
   private _lastZoom: number = -1;
@@ -177,12 +176,21 @@ export class HeatMapLayer extends Layer {
    */
   createTile(x: number, y: number) {
     const promise = this.processor.scheduleTask("createTile", { x, y });
-    promise.then((data: { transferableObjects: TileCoord & { base64: string } }) => {
+    promise.then((data: { transferableObjects: TileCoord & { base64: string | ImageData } }) => {
       Logger.info(data);
       const tileInfo = data.transferableObjects;
       // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
       const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
       if (!tile) return;
+      if (typeof tileInfo.base64 != "string") {
+        // TODO: 频繁的创建有问题
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.putImageData(tileInfo.base64, 0, 0);
+        tileInfo.base64 = canvas.toDataURL("image/png");
+      } else {
+        tileInfo.base64 = "data:image/png;base64," + tileInfo.base64;
+      }
       tile.material = new ImageMaterial(this.engine, Shader.find("tile"), {
         flipY: true,
         base64: tileInfo.base64,

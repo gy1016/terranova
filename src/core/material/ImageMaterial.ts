@@ -31,7 +31,7 @@ export class ImageMaterial extends Material {
 
     if (options.base64 != undefined) {
       const image = new Image();
-      image.src = "data:image/png;base64," + options.base64;
+      image.src = options.base64;
       // Base64也需要触发onload事件，记得改变this的指向
       const initialTexture = this._initialTexture.bind(this, image, options);
       image.onload = () => {
