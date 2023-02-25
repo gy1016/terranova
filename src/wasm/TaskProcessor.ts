@@ -20,6 +20,7 @@ export default class TaskProcessor {
    * @returns Worker实例
    */
   private static createWorker(processor: TaskProcessor) {
+    // TODO: 文件路径处理有误
     const worker = new Worker(processor._workerPth);
 
     worker.onmessage = function (event) {
