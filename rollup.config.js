@@ -40,7 +40,7 @@ export default [
     ],
   },
   {
-    input: "./src/wasm/heat-map.worker.js",
+    input: "./src/wasm/heat-map.wasm.worker.js",
     output: [
       {
         dir: "dist/wasm",
@@ -54,5 +54,16 @@ export default [
         include: "./src/config/wasm.ts",
       }),
     ],
+  },
+  {
+    input: "./src/wasm/heat-map.native.worker.js",
+    output: [
+      {
+        dir: "dist/wasm",
+        format: "esm",
+        entryFileNames: "[name].js",
+      },
+    ],
+    plugins: [resolve()],
   },
 ];
