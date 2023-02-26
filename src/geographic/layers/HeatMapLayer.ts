@@ -16,6 +16,8 @@ export interface HeatMapLayerConfig {
   gradient: number[][] | string[];
   // 热力点位中最大热力值
   maxHeat: number;
+  // 生成热力图的模式
+  mode?: "native" | "wasm" | "edge";
 }
 
 /**
@@ -41,10 +43,12 @@ export class HeatMapLayer extends Layer {
   gradient: number[][] | string[];
   // 热力图最大热力值
   maxHeat: number;
+  // 热力图生成模式
+  mode: "native" | "wasm" | "edge";
   // 缓存的热力瓦片
   tiles: Map<string, Tile>;
   // 子线程实例
-  processor: TaskProcessor = new TaskProcessor("./wasm/heat-map.wasm.worker.js");
+  processor: TaskProcessor;
 
   // 用于相机层级判断
   private _lastZoom: number = -1;
@@ -86,11 +90,13 @@ export class HeatMapLayer extends Layer {
    */
   constructor(engine: Engine, config: HeatMapLayerConfig) {
     super(engine);
-    const { radius, gradient, maxHeat, tileSize } = config;
+    const { radius, gradient, maxHeat, tileSize, mode } = config;
     this.radius = radius;
     this.gradient = gradient;
     this.maxHeat = maxHeat;
     this.tileSize = tileSize;
+    this.mode = mode ?? "wasm";
+    this.processor = new TaskProcessor(`./wasm/heat-map.${this.mode}.worker.js`);
     this.processor.scheduleTask("initHeatMapMiddleware", {
       ...config,
       zoom: engine.scene.camera.level,
@@ -182,11 +188,13 @@ export class HeatMapLayer extends Layer {
       // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
       const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
       if (!tile) return;
-      if (typeof tileInfo.base64 != "string") {
+      if (this.mode === "native") {
         // TODO: 频繁的创建有问题
         const canvas = document.createElement("canvas");
+        canvas.height = this.tileSize;
+        canvas.width = this.tileSize;
         const ctx = canvas.getContext("2d");
-        ctx.putImageData(tileInfo.base64, 0, 0);
+        ctx.putImageData(tileInfo.base64 as ImageData, 0, 0);
         tileInfo.base64 = canvas.toDataURL("image/png");
       } else {
         tileInfo.base64 = "data:image/png;base64," + tileInfo.base64;
