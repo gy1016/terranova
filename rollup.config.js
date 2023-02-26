@@ -66,4 +66,15 @@ export default [
     ],
     plugins: [resolve()],
   },
+  {
+    input: "./src/wasm/heat-map.edge.worker.js",
+    output: [
+      {
+        dir: "dist/wasm",
+        format: "esm",
+        entryFileNames: "[name].js",
+      },
+    ],
+    plugins: [resolve()],
+  },
 ];

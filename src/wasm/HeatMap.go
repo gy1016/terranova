@@ -75,6 +75,7 @@ func addPoints(_ js.Value, args []js.Value) interface{} {
 		myPoints := make([][3]float64, 0)
 		memoPoints[id] = myPoints
 	}
+	// TODO: 这次循环其实没必要！
 	for i := 0; i < newPoints.Length(); i++ {
 		p := newPoints.Index(i)
 		lat := p.Index(0).Float()
