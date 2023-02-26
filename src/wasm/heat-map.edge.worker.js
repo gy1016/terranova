@@ -19,7 +19,7 @@ function initHeatMapMiddleware(id, newGradient, maxIntensity, radius, zoom) {
 }
 
 function addPoints(id, points) {
-  return request("addPoints", { id, points });
+  return request("addPoints", { id, newPoints: points });
 }
 
 function setGradient(id, gradient) {
@@ -168,7 +168,6 @@ async function walkCmdQueue() {
 // 监听信息，用于接收主线程中传过来的命令
 onmessage = (ev) => {
   const { id, cmd, transferableObjects } = ev.data;
-  console.log(ev.data);
   cmdQueue.push({ id, cmd, transferableObjects });
   walkCmdQueue();
 };
