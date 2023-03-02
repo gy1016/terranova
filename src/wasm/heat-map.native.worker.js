@@ -1,5 +1,10 @@
 const cmdQueue = [];
 let middleware;
+let startDate,
+  endDate,
+  totalDate = 0,
+  count = 0;
+let chart = [[], []];
 
 const memoRadius = [];
 const memoHeater = [];
@@ -218,7 +223,14 @@ class HeatmapMiddleware {
    * @param {Object} param1
    */
   createTile(taskId, { x, y }) {
+    chart[0].push(count);
+    chart[1].push(totalDate);
+    count += 1;
+    startDate = new Date().valueOf();
     const tile = createTile(this.id, x, y, this.tileSize);
+    endDate = new Date().valueOf();
+    totalDate += endDate - startDate;
+    console.log(`statisc: ${totalDate} / ${count} = `, totalDate / count);
     this.send(taskId, "tileCreated", { row: y, col: x, level: this.zoom, base64: tile });
   }
 
@@ -259,6 +271,7 @@ function walkCmdQueue() {
       middleware.runTask(id, cmd, transferableObjects);
     }
   }
+  console.log(chart);
 }
 
 // 监听信息，用于接收主线程中传过来的命令

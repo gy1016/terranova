@@ -24,36 +24,10 @@
     </style>
   </head>
   <body>
-    <canvas id="gy"> your browser not support canvas </canvas>
-    <script type="module">
-      import { Engine, HeatMapLayer, Vector3 } from "./index.js";
-
-      const whuer3d = new Engine("gy", {
-        cameraPos: new Vector3(0, 0, 6378137 * 3),
-      });
-      const heatLayer = new HeatMapLayer(whuer3d, {
-        radius: 10,
-        tileSize: 256,
-        gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
-        maxHeat: 999,
-        mode: "edge",
-      });
-
-      const heatPoints = [];
-      fetch("http://121.199.160.202:9999/query")
-        .then((res) => res.json())
-        .then(({ data }) => {
-          for (let point of data) {
-            heatPoints.push({
-              lat: point.lat,
-              lng: point.lng,
-              heat: point.heat,
-            });
-          }
-          heatLayer.addPoints(heatPoints);
-          whuer3d.scene.addLayer(heatLayer);
-          whuer3d.run();
-        });
-    </script>
+    <ul>
+      <li><a href="./heatmap.wasm.html">wasm</a></li>
+      <li><a href="./heatmap.native.html">native</a></li>
+      <li><a href="./heatmap.edge.html">edge</a></li>
+    </ul>
   </body>
 </html>
