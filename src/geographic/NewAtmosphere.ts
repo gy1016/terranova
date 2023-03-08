@@ -20,7 +20,7 @@ export class NewAtmosphere extends Entity {
 
     private _shape: Ellipsoid = Ellipsoid.Wgs84;
     private atmosphereOneOverRadiiSquared: Vector3;
-    static thickness: number = 8e3;
+    static thickness: number = 8e4;
 
 
     /** The ellipsoid parameters corresponding to the sphere. */
@@ -38,7 +38,7 @@ export class NewAtmosphere extends Entity {
      */
     constructor(engine: Engine) {
         super(
-            "Atmosphere",
+            "newAtmosphere",
             PrimitiveMesh.createCuboid(engine, 2 * (6378137.0 + NewAtmosphere.thickness),
                 2 * (6356752.314245 + NewAtmosphere.thickness), 2 * (6378137.0 + NewAtmosphere.thickness)),
             new Material(engine, Shader.find("newAtmosphere"))
@@ -48,6 +48,7 @@ export class NewAtmosphere extends Entity {
             1 / ((6356752.314245 + NewAtmosphere.thickness) * (6356752.314245 + NewAtmosphere.thickness)),
             1 / ((6378137.0 + NewAtmosphere.thickness) * (6378137.0 + NewAtmosphere.thickness))
         );
+        console.log(NewAtmosphere.thickness);
     }
 
     /**
@@ -59,7 +60,7 @@ export class NewAtmosphere extends Entity {
         shaderData.setVector3(this._AtmosphereOneOverRadiiSquared, this.atmosphereOneOverRadiiSquared);
         shaderData.setFloat(this._AtmosphereRayleighScaleHeight, 8000);
         shaderData.setVector3(this._AtmosphereRayleighCoefficient, new Vector3(5.5e-6, 13.0e-6, 28.4e-6));
-        shaderData.setFloat(this._AtmosphereLightIntensity, 50);
+        shaderData.setFloat(this._AtmosphereLightIntensity, 30);
         shaderData.setFloat(this._GlobeRadius, 6378137.0);
         shaderData.setInt(this._ViewSamples, 15);
         shaderData.setInt(this._LightSamples, 4);
