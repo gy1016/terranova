@@ -1,123 +1,68 @@
-import { Vector3, Vector2 } from "../math";
-import { Engine, ModelMesh, Material, ImageMaterial, Shader, TextureFormat } from "../core";
-import { Ellipsoid } from "../geographic";
-import { EARTH_ATMOSPHERE } from "../config";
+import { PrimitiveMesh } from "../core/mesh";
+import { Ellipsoid } from "./Ellipsoid";
+import { Material } from "../core/material";
+import { Shader, ShaderData, ShaderProperty } from "../core/shader";
+import { Engine } from "../core/Engine";
+import { Entity } from "../core/Entity";
+import { Vector3 } from "..";
 
-// TODO: 和瓦片模块基本一样，可以抽象
-export class Atmosphere {
-  engine: Engine;
-  _mesh: ModelMesh;
-  _material: Material;
+export class Atmosphere extends Entity {
+  private static _GlobeOneOverRadiiSquared: ShaderProperty = Shader.getPropertyByName("u_GlobeOneOverRadiiSquared");
 
-  private _segment: number = 360;
-  private _smallRadius = Ellipsoid.Wgs84.maximumRadius * 0.99;
-  private _bigRadius = Ellipsoid.Wgs84.maximumRadius * 1.01;
 
+  private _AtmosphereOneOverRadiiSquared: ShaderProperty = Shader.getPropertyByName("u_AtmosphereOneOverRadiiSquared");
+  private _AtmosphereRayleighScaleHeight: ShaderProperty = Shader.getPropertyByName("u_AtmosphereRayleighScaleHeight");
+  private _AtmosphereRayleighCoefficient: ShaderProperty = Shader.getPropertyByName("u_AtmosphereRayleighCoefficient");
+  private _AtmosphereLightIntensity: ShaderProperty = Shader.getPropertyByName("u_AtmosphereLightIntensity");
+  private _GlobeRadius: ShaderProperty = Shader.getPropertyByName("u_GlobeRadius");
+  private _ViewSamples: ShaderProperty = Shader.getPropertyByName("u_ViewSamples");
+  private _LightSamples: ShaderProperty = Shader.getPropertyByName("u_LightSamples");
+
+  private _shape: Ellipsoid = Ellipsoid.Wgs84;
+  private atmosphereOneOverRadiiSquared: Vector3;
+  static thickness: number = 8e4;
+
+
+  /** The ellipsoid parameters corresponding to the sphere. */
+  get shape() {
+    return this._shape;
+  }
+
+  set shape(ellipsoid: Ellipsoid) {
+    this._shape = ellipsoid;
+  }
+
+  /**
+   * Create a cube grid and build a picture material based on the engine.
+   * @param engine Engine instance.
+   */
   constructor(engine: Engine) {
-    this.engine = engine;
-    this._mesh = new ModelMesh(engine);
-    this._generateVertex();
-    this._material = new ImageMaterial(this.engine, Shader.find("atmosphere"), {
-      url: EARTH_ATMOSPHERE,
-      flipY: false,
-      textureFormat: TextureFormat.R8G8B8A8,
-    });
+    super(
+      "newAtmosphere",
+      PrimitiveMesh.createCuboid(engine, 2 * (6378137.0 + Atmosphere.thickness),
+        2 * (6356752.314245 + Atmosphere.thickness), 2 * (6378137.0 + Atmosphere.thickness)),
+      new Material(engine, Shader.find("newAtmosphere"))
+    );
+    this.atmosphereOneOverRadiiSquared = new Vector3(
+      1 / ((6378137.0 + Atmosphere.thickness) * (6378137.0 + Atmosphere.thickness)),
+      1 / ((6356752.314245 + Atmosphere.thickness) * (6356752.314245 + Atmosphere.thickness)),
+      1 / ((6378137.0 + Atmosphere.thickness) * (6378137.0 + Atmosphere.thickness))
+    );
+    console.log(Atmosphere.thickness);
   }
 
-  private _generateVertex() {
-    const sr = this._smallRadius;
-    const br = this._bigRadius;
-
-    const smallCirclePos: Vector3[] = [];
-    const bigCirclePos: Vector3[] = [];
-    const smallCircleUV: Vector2[] = [];
-    const bigCircleUV: Vector2[] = [];
-
-    const positions: Vector3[] = [];
-    const uvs: Vector2[] = [];
-    const indices: number[] = [];
-
-    const deltaRadian: number = (Math.PI * 2) / this._segment;
-    const deltaS: number = 1.0 / this._segment;
-
-    for (let i = 0; i <= this._segment; ++i) {
-      const u = deltaS * i > 1 ? 1 : deltaS * i;
-      const sx = sr * Math.cos(i * deltaRadian);
-      const sy = sr * Math.sin(i * deltaRadian);
-      const bx = br * Math.cos(i * deltaRadian);
-      const by = br * Math.sin(i * deltaRadian);
-
-      // 填充顶点
-      const sVertex = new Vector3(sx, sy, 1250000);
-      const bVertex = new Vector3(bx, by, 1250000);
-
-      smallCirclePos.push(sVertex);
-      bigCirclePos.push(bVertex);
-
-      // 填充纹理
-      // 小圈的纵坐标总是1（不反转Y轴）
-      const sTexture = new Vector2(u, 1);
-      // 大圈的纵坐标总是0
-      const bTexture = new Vector2(u, 0);
-
-      smallCircleUV.push(sTexture);
-      bigCircleUV.push(bTexture);
-    }
-
-    positions.push(...smallCirclePos, ...bigCirclePos);
-    uvs.push(...smallCircleUV, ...bigCircleUV);
-
-    for (let i = 0; i < this._segment; ++i) {
-      for (let j = 0; j < this._segment; ++j) {
-        const idx0 = (this._segment + 1) * i + j;
-        const idx1 = (this._segment + 1) * (i + 1) + j;
-        const idx2 = idx1 + 1;
-        const idx3 = idx0 + 1;
-        indices.push(idx0, idx1, idx2, idx2, idx3, idx0);
-      }
-    }
-
-    this._initialize(this._mesh, positions, uvs, new Uint32Array(indices), true);
-  }
-
-  private _initialize(
-    mesh: ModelMesh,
-    positions: Vector3[],
-    uvs: Vector2[],
-    indices: Uint16Array | Uint32Array,
-    noLongerAccessible: boolean
-  ) {
-    mesh.setPositions(positions);
-    mesh.setUVs(uvs);
-    mesh.setIndices(indices);
-
-    mesh.uploadData(noLongerAccessible);
-    mesh.addSubMesh(0, indices.length);
-  }
-
-  _render() {
-    const engine = this.engine;
-    const gl = engine._renderer.gl;
-    const camera = engine.scene.camera;
-    const mesh = this._mesh;
-    const material = this._material;
-
-    // TODO: 这段固定逻辑应该要抽离以下，热力图层也有这个问题
-    gl.disable(gl.DEPTH_TEST);
-    gl.depthMask(false);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-    material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
-    const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
-    program.bind();
-    program.uploadAll(program.cameraUniformBlock, camera.shaderData);
-    program.uploadAll(program.materialUniformBlock, material.shaderData);
-
-    mesh._draw(program, mesh.subMesh);
-
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthMask(true);
-    gl.disable(gl.BLEND);
+  /**
+   * Upload the parameters of the ellipsoid to the GPU.
+   * @param shaderData Scene shaderdata.
+   */
+  uploadShaderData(shaderData: ShaderData): void {
+    shaderData.setVector3(Atmosphere._GlobeOneOverRadiiSquared, this.shape.oneOverRadiiSquared);
+    shaderData.setVector3(this._AtmosphereOneOverRadiiSquared, this.atmosphereOneOverRadiiSquared);
+    shaderData.setFloat(this._AtmosphereRayleighScaleHeight, 8000);
+    shaderData.setVector3(this._AtmosphereRayleighCoefficient, new Vector3(5.5e-6, 13.0e-6, 28.4e-6));
+    shaderData.setFloat(this._AtmosphereLightIntensity, 30);
+    shaderData.setFloat(this._GlobeRadius, 6378137.0);
+    shaderData.setInt(this._ViewSamples, 15);
+    shaderData.setInt(this._LightSamples, 4);
   }
 }

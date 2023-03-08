@@ -56,15 +56,17 @@ export class Scene {
     this._engine = engine;
   }
 
-  private _initialAtmosphere() {
-    this._atmosphere = new Atmosphere(this.engine);
-  }
-
   private _initialGlobe() {
     // 将光追椭球推入根式体
     this._globe = new RayCastedGlobe(this.engine);
     this.globe.uploadShaderData(this.shaderData);
     this.rootEntities.push(this._globe);
+  }
+
+  private _initialAtmosphere() {
+    this._atmosphere = new Atmosphere(this.engine);
+    this._atmosphere.uploadShaderData(this.shaderData);
+    this.rootEntities.push(this._atmosphere);
   }
 
   private _initialCamera() {
@@ -143,7 +145,9 @@ export class Scene {
     gl.depthFunc(gl.LESS);
     for (let i = 0; i < rootEntities.length; ++i) {
       const { mesh, material } = rootEntities[i];
-      material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
+      if (!(rootEntities[i] instanceof Atmosphere)) {
+        material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
+      }
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);
       program.bind();
       program.uploadAll(program.cameraUniformBlock, camera.shaderData);
@@ -160,7 +164,6 @@ export class Scene {
       layers[i]._render(camera.level);
     }
 
-    // atmosphere._render();
     background._render();
   }
 }
