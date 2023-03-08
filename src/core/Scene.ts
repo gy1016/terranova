@@ -138,7 +138,6 @@ export class Scene {
     const camera = this.camera;
     const rootEntities = this.rootEntities;
     const layers = this._layers;
-    const atmosphere = this._atmosphere;
     const background = this.background;
 
     // 渲染实体

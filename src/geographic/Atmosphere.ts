@@ -38,10 +38,10 @@ export class Atmosphere extends Entity {
    */
   constructor(engine: Engine) {
     super(
-      "newAtmosphere",
+      "Atmosphere",
       PrimitiveMesh.createCuboid(engine, 2 * (6378137.0 + Atmosphere.thickness),
         2 * (6356752.314245 + Atmosphere.thickness), 2 * (6378137.0 + Atmosphere.thickness)),
-      new Material(engine, Shader.find("newAtmosphere"))
+      new Material(engine, Shader.find("atmosphere"))
     );
     this.atmosphereOneOverRadiiSquared = new Vector3(
       1 / ((6378137.0 + Atmosphere.thickness) * (6378137.0 + Atmosphere.thickness)),
