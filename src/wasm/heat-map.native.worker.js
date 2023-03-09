@@ -15,12 +15,12 @@ const memoGradients = [];
 
 function addPoints(id, points) {
   let myPoints = [];
+  let heater = 0;
 
   if (memoPoints[id]) {
     myPoints = memoPoints[id];
   }
 
-  let heater = Number.NEGATIVE_INFINITY;
   for (const p of points) {
     lat = p[0];
     lng = p[1];
@@ -86,7 +86,10 @@ function plotHeat(heatMatrix, size, pointX, pointY, radius, weight) {
 }
 
 function heatToColor(heat, maxIntensity, gradient) {
-  let r, g, b, a;
+  let r = 0,
+    g = 0,
+    b = 0,
+    a = 0;
   const gradSteps = gradient.length;
   const stepLen = maxIntensity / gradSteps;
   const gradStepF = Math.floor(heat / stepLen);
@@ -94,8 +97,8 @@ function heatToColor(heat, maxIntensity, gradient) {
   const gradStep = Math.round(gradStepF);
   if (gradStep >= gradSteps) {
     r = gradient[gradSteps - 1][0];
-    r = gradient[gradSteps - 1][1];
-    r = gradient[gradSteps - 1][2];
+    g = gradient[gradSteps - 1][1];
+    b = gradient[gradSteps - 1][2];
     a = 255;
   } else {
     if (gradStep === 0) {
@@ -122,7 +125,7 @@ function createTile(id, tileX, tileY, size) {
   const points = memoPoints[id];
   const numPoints = points.length;
   const heater = memoHeater[id];
-  const maxIntensity = memoMaxIntensity[id];
+  let maxIntensity = memoMaxIntensity[id];
   if (maxIntensity == -1) {
     maxIntensity = heater;
   }
