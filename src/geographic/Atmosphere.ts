@@ -9,7 +9,6 @@ import { Vector3 } from "..";
 export class Atmosphere extends Entity {
   private static _GlobeOneOverRadiiSquared: ShaderProperty = Shader.getPropertyByName("u_GlobeOneOverRadiiSquared");
 
-
   private _AtmosphereOneOverRadiiSquared: ShaderProperty = Shader.getPropertyByName("u_AtmosphereOneOverRadiiSquared");
   private _AtmosphereRayleighScaleHeight: ShaderProperty = Shader.getPropertyByName("u_AtmosphereRayleighScaleHeight");
   private _AtmosphereRayleighCoefficient: ShaderProperty = Shader.getPropertyByName("u_AtmosphereRayleighCoefficient");
@@ -21,7 +20,6 @@ export class Atmosphere extends Entity {
   private _shape: Ellipsoid = Ellipsoid.Wgs84;
   private atmosphereOneOverRadiiSquared: Vector3;
   static thickness: number = 8e4;
-
 
   /** The ellipsoid parameters corresponding to the sphere. */
   get shape() {
@@ -39,8 +37,12 @@ export class Atmosphere extends Entity {
   constructor(engine: Engine) {
     super(
       "Atmosphere",
-      PrimitiveMesh.createCuboid(engine, 2 * (6378137.0 + Atmosphere.thickness),
-        2 * (6356752.314245 + Atmosphere.thickness), 2 * (6378137.0 + Atmosphere.thickness)),
+      PrimitiveMesh.createCuboid(
+        engine,
+        2 * (6378137.0 + Atmosphere.thickness),
+        2 * (6356752.314245 + Atmosphere.thickness),
+        2 * (6378137.0 + Atmosphere.thickness)
+      ),
       new Material(engine, Shader.find("atmosphere"))
     );
     this.atmosphereOneOverRadiiSquared = new Vector3(
@@ -48,7 +50,6 @@ export class Atmosphere extends Entity {
       1 / ((6356752.314245 + Atmosphere.thickness) * (6356752.314245 + Atmosphere.thickness)),
       1 / ((6378137.0 + Atmosphere.thickness) * (6378137.0 + Atmosphere.thickness))
     );
-    console.log(Atmosphere.thickness);
   }
 
   /**
