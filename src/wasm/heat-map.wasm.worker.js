@@ -764,13 +764,11 @@ function walkCmdQueue() {
       middleware.runTask(id, cmd, transferableObjects);
     }
   }
-  console.log(chart);
 }
 
 // 监听信息，用于接收主线程中传过来的命令
 onmessage = (ev) => {
   const { id, cmd, transferableObjects } = ev.data;
-  console.log(ev.data);
   cmdQueue.push({ id, cmd, transferableObjects });
   if (wasmLoaded) walkCmdQueue();
 };
