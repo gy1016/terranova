@@ -1,4 +1,4 @@
-import { Vector3, MathUtil } from "../math";
+import { Vector3, Matrix, MathUtil } from "../math";
 
 /** Prevent gimbal lock. */
 const ESP = MathUtil.zeroTolerance;
@@ -74,5 +74,22 @@ export class Spherical {
     v3.set(sinPhiRadius * Math.sin(this.theta), Math.cos(this.phi) * this.radius, sinPhiRadius * Math.cos(this.theta));
 
     return this;
+  }
+
+  /**
+   * Get transform matrix from this coordinates to NEU-like coordinates.
+   * @returns Transform Matrix
+   */
+  getTransformMatrix() {
+    const sinTheta = Math.sin(this.theta);
+    const cosTheta = Math.cos(this.theta);
+    const sinPhi = Math.sin(this.phi);
+    const cosPhi = Math.cos(this.phi);
+    return new Matrix(
+      sinTheta * cosPhi, -sinPhi, cosTheta * cosPhi, 0,
+      sinTheta * sinPhi, cosPhi, cosTheta * sinPhi, 0,
+      -cosTheta, 0, sinTheta, 0,
+      0, 0, 0, 1
+    );
   }
 }
