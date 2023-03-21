@@ -39,7 +39,7 @@ export class Entity {
    * @param mesh Entity mesh.
    * @param material Entity material.
    */
-  constructor(name: string, mesh: Mesh, material: Material) {
+  constructor(name: string, mesh: Mesh, material?: Material) {
     this.name = name;
     this.id = Entity._count++;
     this.mesh = mesh;
