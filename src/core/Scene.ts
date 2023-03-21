@@ -59,7 +59,7 @@ export class Scene {
   private _initialGlobe() {
     // 将光追椭球推入根式体
     this._globe = new RayCastedGlobe(this.engine);
-    this.globe.uploadShaderData(this.shaderData);
+    this._globe.uploadShaderData(this.shaderData);
     this.rootEntities.push(this._globe);
   }
 
@@ -144,6 +144,7 @@ export class Scene {
     gl.depthFunc(gl.LESS);
     for (let i = 0; i < rootEntities.length; ++i) {
       const { mesh, material } = rootEntities[i];
+      if (!material) continue;
       if (!(rootEntities[i] instanceof Atmosphere)) {
         material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       }
