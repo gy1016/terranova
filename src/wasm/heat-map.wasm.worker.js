@@ -629,11 +629,6 @@ const go = new Go();
 const cmdQueue = [];
 let wasmLoaded = false;
 let middleware;
-let startDate,
-  endDate,
-  totalDate = 0,
-  count = 0;
-let chart = [[], []];
 
 // 请求wasm文件并流失编译
 WebAssembly.instantiateStreaming(fetch(HEATMAP_WASM), go.importObject).then((result) => {
@@ -716,14 +711,7 @@ class HeatmapMiddleware {
    * @param {Object} param1
    */
   createTile(taskId, { x, y }) {
-    chart[0].push(count);
-    chart[1].push(totalDate);
-    count += 1;
-    startDate = new Date().valueOf();
     const tile = createTile(this.id, x, y, this.tileSize);
-    endDate = new Date().valueOf();
-    totalDate += endDate - startDate;
-    console.log(`statisc: ${totalDate} / ${count} = `, totalDate / count);
     this.send(taskId, "tileCreated", { row: y, col: x, level: this.zoom, base64: tile });
   }
 
