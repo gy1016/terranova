@@ -199,11 +199,15 @@ export class HeatMapLayer extends Layer {
       } else {
         tileInfo.base64 = "data:image/png;base64," + tileInfo.base64;
       }
-      tile.material = new ImageMaterial(this.engine, Shader.find("tile"), {
-        flipY: true,
-        base64: tileInfo.base64,
-        textureFormat: TextureFormat.R8G8B8A8,
-      });
+      const image = new Image();
+      image.src = tileInfo.base64;
+      image.onload = () => {
+        tile.material = new ImageMaterial(this.engine, Shader.find("tile"), {
+          image,
+          flipY: true,
+          textureFormat: TextureFormat.R8G8B8A8,
+        });
+      };
     });
   }
 
@@ -268,7 +272,7 @@ export class HeatMapLayer extends Layer {
 
     for (const tile of this.tiles.values()) {
       const { mesh, material } = tile;
-      // ! 可能子线程还没有发过来base64
+      // 材质准备好了才绘制，否则下一个
       if (!material) continue;
       material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);

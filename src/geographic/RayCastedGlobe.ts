@@ -4,6 +4,7 @@ import { ImageMaterial } from "../core/material";
 import { Shader, ShaderData, ShaderProperty } from "../core/shader";
 import { Engine } from "../core/Engine";
 import { Entity } from "../core/Entity";
+import { loadImage } from "../core/base";
 
 export class RayCastedGlobe extends Entity {
   private static _shapeProperty: ShaderProperty = Shader.getPropertyByName("u_GlobeOneOverRadiiSquared");
@@ -24,14 +25,15 @@ export class RayCastedGlobe extends Entity {
    * @param engine Engine instance.
    */
   constructor(engine: Engine) {
-    super(
-      "rayCastedGlobe",
-      PrimitiveMesh.createCuboid(engine, 2 * 6378137.0, 2 * 6356752.314245, 2 * 6378137.0),
-      new ImageMaterial(engine, Shader.find("rayCastedGlobe"), {
-        url: "https://khms0.google.com/kh/v=930?x=0&y=0&z=0",
+    super("rayCastedGlobe", PrimitiveMesh.createCuboid(engine, 2 * 6378137.0, 2 * 6356752.314245, 2 * 6378137.0));
+
+    loadImage("https://khms0.google.com/kh/v=930?x=0&y=0&z=0").then((image) => {
+      this.material = new ImageMaterial(engine, Shader.find("rayCastedGlobe"), {
+        image,
         flipY: true,
-      })
-    );
+      });
+      this.material.shaderData.setTexture(ImageMaterial._sampleprop, (this.material as ImageMaterial).texture2d);
+    });
   }
 
   /**
@@ -40,6 +42,5 @@ export class RayCastedGlobe extends Entity {
    */
   uploadShaderData(shaderData: ShaderData): void {
     shaderData.setVector3(RayCastedGlobe._shapeProperty, this.shape.oneOverRadiiSquared);
-    this.material.shaderData.setTexture(ImageMaterial._sampleprop, (this.material as ImageMaterial).texture2d);
   }
 }

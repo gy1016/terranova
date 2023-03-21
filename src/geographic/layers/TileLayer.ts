@@ -6,6 +6,7 @@ import { MathUtil, Vector3 } from "../../math";
 import { LRU } from "../LRU";
 import { Ellipsoid } from "../Ellipsoid";
 import { Layer } from "./Layer";
+import { loadImage } from "../../core/base";
 
 export class TileLayer extends Layer {
   // 每帧下面，当前层级当前相机位置，记录某行是否进行了可见性判断
@@ -140,9 +141,12 @@ export class TileLayer extends Layer {
       }
       url = this._initUrl(str, tile);
 
-      const material = new ImageMaterial(this.engine, Shader.find("tile"), { url, flipY: true });
-      tile.material = material;
-      this.lruCache.put(tile.key, tile);
+      loadImage(url).then((image) => {
+        const material = new ImageMaterial(this.engine, Shader.find("tile"), { image, flipY: true });
+
+        tile.material = material;
+        this.lruCache.put(tile.key, tile);
+      });
     }
   }
 
@@ -160,7 +164,7 @@ export class TileLayer extends Layer {
     const tiles = this.tiles;
     for (let i = 0; i < tiles.length; ++i) {
       const { mesh, material } = tiles[i];
-      // ! 按道理说这里material肯定是有的，但是会报错，先加个判断
+      // 材质准备好了才绘制，否则下一个
       if (!material) continue;
       material.shaderData.setTexture(ImageMaterial._sampleprop, (material as ImageMaterial).texture2d);
       const program = material.shader._getShaderProgram(engine, Shader._compileMacros);

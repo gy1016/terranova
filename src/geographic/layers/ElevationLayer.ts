@@ -1,4 +1,4 @@
-import { Engine, ImageMaterial, Shader } from "../../core";
+import { Engine, ImageMaterial, loadImage, Shader } from "../../core";
 import { Terrain } from "../Terrain";
 import { Layer } from "./Layer";
 import { LRU } from "../LRU";
@@ -138,7 +138,7 @@ export class ElevationLayer extends Layer {
   }
 
   // 生成可见地形的格网和材质
-  async _refresh() {
+  _refresh() {
     if (this._isLercLoad === false) return;
     const terrainAddress = this._terrainAddress;
     const exaggerationFactor = this._exaggerationFactor;
@@ -161,6 +161,7 @@ export class ElevationLayer extends Layer {
       // 生成高度图的资源URL
       this._lruCache.put(terrain.key, terrain);
       terrainUrl = this._initUrl(terrainAddress, terrain);
+      // ! It's ugly but useful! 完了再改，丢死人了这段代码
       fetch(terrainUrl)
         .then((response) => response.arrayBuffer())
         .then((arrayBuffer) => {
@@ -173,8 +174,10 @@ export class ElevationLayer extends Layer {
 
           // 根据瓦片生成材质
           tileUrl = this._initUrl(tileAddress, terrain);
-          const material = new ImageMaterial(this.engine, Shader.find("tile"), { url: tileUrl, flipY: true });
-          terrain.material = material;
+          loadImage(tileUrl).then((image) => {
+            const material = new ImageMaterial(this.engine, Shader.find("tile"), { image, flipY: true });
+            terrain.material = material;
+          });
         });
     }
   }
