@@ -50,7 +50,7 @@ export class ImageMaterial extends Material {
 
   _initialTexture(image: HTMLImageElement, options: ImageMaterialOptions) {
     let { textureFormat } = options;
-    textureFormat = textureFormat == undefined ? TextureFormat.R8G8B8 : textureFormat;
+    textureFormat = textureFormat == undefined ? TextureFormat.R8G8B8A8 : textureFormat;
     this.texture2d = new Texture2D(this.engine, image.width, image.height, textureFormat);
     this.texture2d.setImageSource(image, options.flipY);
   }
