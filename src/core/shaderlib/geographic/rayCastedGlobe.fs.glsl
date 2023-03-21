@@ -49,7 +49,8 @@ void main()
 
         float intensity = LightIntensity(normal, toLight, toEye, u_DiffuseSpecularAmbientShininess);
 
-        gl_FragColor = vec4(intensity * texture2D(u_Sampler, ComputeTextureCoordinates(normal)).rgb, 1.0);
+        // gl_FragColor = vec4(intensity * texture2D(u_Sampler, ComputeTextureCoordinates(normal)).rgb, 1.0);
+        gl_FragColor = texture2D(u_Sampler, ComputeTextureCoordinates(normal));
     }
     else
     {
