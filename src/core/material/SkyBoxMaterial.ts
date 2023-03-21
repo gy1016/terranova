@@ -42,12 +42,9 @@ export class SkyBoxMaterial extends Material {
       this.textureCube = new TextureCube(this.engine, images[0].width);
       this.shaderData.setTexture(SkyBoxMaterial._skyboxprop, this.textureCube);
 
-      this.textureCube.setImageSource(faceInfos[0].target, images[0]);
-      this.textureCube.setImageSource(faceInfos[1].target, images[1]);
-      this.textureCube.setImageSource(faceInfos[2].target, images[2]);
-      this.textureCube.setImageSource(faceInfos[3].target, images[3]);
-      this.textureCube.setImageSource(faceInfos[4].target, images[4]);
-      this.textureCube.setImageSource(faceInfos[5].target, images[5]);
+      for (let i = 0; i < images.length; ++i) {
+        this.textureCube.setImageSource(faceInfos[i].target, images[i]);
+      }
 
       const gl = this.engine._renderer.gl;
       gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
