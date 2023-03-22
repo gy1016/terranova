@@ -181,7 +181,9 @@ export class OrbitControl {
   }
 
   get relativeLevelSpeed(): number {
-    return Math.pow(0.55, this.camera.level);
+    // TODO: 做的不好
+    const base = this.camera.level < 6 ? 0.65 : 0.55;
+    return Math.pow(base, this.camera.level);
   }
 
   /**
@@ -322,7 +324,7 @@ export class OrbitControl {
    * @returns Zoom scale.
    */
   getZoomScale() {
-    return Math.pow(0.95, this.relativeLevelSpeed);
+    return Math.pow(0.9, this.relativeLevelSpeed);
   }
 
   /**
