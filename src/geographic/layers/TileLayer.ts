@@ -14,7 +14,7 @@ export class TileLayer extends Layer {
   protected _address: string | string[];
 
   level: number;
-  lruCache: LRU<string, Tile> = new LRU(50);
+  lruCache: LRU<string, Tile> = new LRU(100);
   tiles: Tile[] = [];
 
   private _loopLimit: number;
