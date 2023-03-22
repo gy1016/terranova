@@ -47,6 +47,10 @@ export class Scene {
     return this._layers;
   }
 
+  set layers(layers: Layer[]) {
+    this._layers = layers;
+  }
+
   /** The background of the scene, the default is the skybox. */
   background: Background;
 
