@@ -1,4 +1,4 @@
-import { Engine, ImageMaterial, Shader } from "../../core";
+import { Engine, ImageMaterial, Material, Shader } from "../../core";
 import { TILE_SERVICE_MAP, TileServiceMap } from "../../config";
 import { Tile } from "./Tile";
 import { TileDetails } from "./TileDetails";
@@ -140,7 +140,7 @@ export class TileLayer extends Layer {
         str = this._address;
       }
       url = this._initUrl(str, tile);
-
+      tile.material = new Material(this.engine, Shader.find("tile"));
       loadImage(url).then((image) => {
         const material = new ImageMaterial(this.engine, Shader.find("tile"), { image, flipY: true });
 
