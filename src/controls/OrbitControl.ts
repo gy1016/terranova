@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Ellipsoid } from "../geographic";
 import { Camera } from "../core/Camera";
-import { Matrix, Vector2, Vector3 } from "../math";
+import { Matrix, Vector2, Vector3, MathUtil } from "../math";
 import { Spherical } from "./Spherical";
+import { RayCastedGlobe } from "@/geographic/RayCastedGlobe";
 
 type MouseWheelEvent = any;
 
@@ -60,13 +61,13 @@ export class OrbitControl {
   /** Rotate speed. */
   rotateSpeed: number;
   /** Clicking the corresponding key with the mouse is actually the key corresponding to the left button, the scroll wheel and the right button. */
-  mouseButtons: { ORBIT: number; ZOOM: number; PAN: number };
+  mouseButtons: { PAN: number; ROTATE: number; ZOOM: number };
   /** What state is the current controller in. */
   STATE: {
+    PAN: number;
     ROTATE: number;
     ZOOM: number;
     NONE: number;
-    PAN: number;
   };
   /** Contains mousemove and mouseup. */
   mouseUpEvents: { listener: any; type: string }[];
@@ -74,22 +75,27 @@ export class OrbitControl {
   constEvents: { listener: any; type: string; element?: Window }[];
 
   private _position: Vector3;
+  private _targetRelative: Vector3;
+  private _upRelative: Vector3;
   private _offset: Vector3;
   private _spherical: Spherical;
   private _sphericalDelta: Spherical;
   private _sphericalDump: Spherical;
+  private _relativeOffset: Vector3;
+  private _relativeSpherical: Spherical;
+  private _relativeSphericalDelta: Spherical;
+  private _clickedPoint: Vector3;
+  private _clickedPointSpherical: Spherical;
   private _zoomFrag: number;
   private _scale: number;
-  private _panOffset: Vector3;
   private _isMouseUp: boolean;
-  private _vPan: Vector3;
   private _state: any;
-  private _rotateStart: Vector2;
-  private _rotateEnd: Vector2;
-  private _rotateDelta: Vector2;
   private _panStart: Vector2;
   private _panEnd: Vector2;
   private _panDelta: Vector2;
+  private _rotateStart: Vector2;
+  private _rotateEnd: Vector2;
+  private _rotateDelta: Vector2;
   private _zoomStart: Vector2;
   private _zoomEnd: Vector2;
   private _zoomDelta: Vector2;
@@ -119,25 +125,28 @@ export class OrbitControl {
     this.enablePan = true;
     this.autoRotate = false;
     this.mouseButtons = {
-      ORBIT: 0,
-      ZOOM: 1,
-      PAN: 2,
+      PAN: 0,
+      ROTATE: 1,
+      ZOOM: 2,
     };
 
     // Reuse objects to prevent excessive stack allocation.
     // update
     this._position = new Vector3();
+    this._targetRelative = new Vector3(-0.1, -1, 0);
+    this._upRelative = new Vector3(-1, 0.1, 0);
     this._offset = new Vector3();
     this._spherical = new Spherical();
     this._sphericalDelta = new Spherical();
     this._sphericalDump = new Spherical();
+    this._relativeOffset = new Vector3();
+    this._relativeSpherical = new Spherical();
+    this._relativeSphericalDelta = new Spherical();
+    this._clickedPoint = new Vector3();
+    this._clickedPointSpherical = new Spherical();
     this._zoomFrag = 0;
     this._scale = 1;
-    this._panOffset = new Vector3();
     this._isMouseUp = true;
-
-    // pan
-    this._vPan = new Vector3();
 
     // state
     this._rotateStart = new Vector2();
@@ -154,9 +163,9 @@ export class OrbitControl {
 
     this.STATE = {
       NONE: -1,
-      ROTATE: 0,
-      ZOOM: 1,
-      PAN: 2,
+      PAN: 0,
+      ROTATE: 1,
+      ZOOM: 2,
     };
     this._state = this.STATE.NONE;
 
@@ -209,11 +218,10 @@ export class OrbitControl {
   onUpdate(dtime: number) {
     const position: Vector3 = this.camera.transform.position;
     this._offset = position.clone();
-    this._offset.subtract(this.target);
     this._spherical.setFromVec3(this._offset);
 
     if (this.autoRotate && this._state === this.STATE.NONE) {
-      this.rotateLeft(this.getAutoRotationAngle(dtime));
+      this.panLeft(this.getAutoRotationAngle(dtime));
     }
 
     this._spherical.theta += this._sphericalDelta.theta;
@@ -231,13 +239,65 @@ export class OrbitControl {
     this._spherical.radius += this._zoomFrag;
     this._spherical.radius = Math.max(this.minDistance, Math.min(this.maxDistance, this._spherical.radius));
 
-    this.target.add(this._panOffset);
     this._spherical.setToVec3(this._offset);
-    this._position = this.target.clone();
-    this._position.add(this._offset);
+    this._position = this._offset.clone();
+
+    const transformMatrix = this._spherical.getTransformMatrix();
+    const invTransformMatrix = new Matrix();
+    Matrix.transpose(transformMatrix, invTransformMatrix);
+
+    if (this._state === this.STATE.ROTATE) {
+      // define relative spherical
+      this._relativeOffset = this._position.clone();
+      this._relativeOffset.subtract(this._clickedPoint);
+
+      const relativeTransformMatrix = this._clickedPointSpherical.getTransformMatrix();
+      const localRelativeOffset = new Vector3();
+
+      // 计算相对偏差向量在相对球中的局部坐标
+      Vector3.transformToVec3(this._relativeOffset, relativeTransformMatrix.transpose(), localRelativeOffset);
+      this._relativeSpherical.setFromVec3(localRelativeOffset);
+
+      this._relativeSpherical.theta += this._relativeSphericalDelta.theta;
+      this._relativeSpherical.phi += this._relativeSphericalDelta.phi;
+
+      this._relativeSpherical.theta = Math.max(
+        this.minAzimuthAngle,
+        Math.min(this.maxAzimuthAngle, this._relativeSpherical.theta)
+      );
+      // 限制phi不能大于0.45PI，防止相机中心看向太空
+      this._relativeSpherical.phi = Math.max(
+        this.minPolarAngle,
+        Math.min(this.maxPolarAngle * 0.45, this._relativeSpherical.phi)
+      );
+      this._relativeSpherical.makeSafe();
+
+      this._relativeSpherical.setToVec3(localRelativeOffset);
+      Vector3.transformToVec3(localRelativeOffset, relativeTransformMatrix.transpose(), this._relativeOffset);
+
+      // 计算旋转后的相机位置
+      this._position = this._clickedPoint.clone().add(this._relativeOffset);
+
+      // 计算相机的局部观察方向，用来使其对准中心选择点
+      Vector3.transformToVec3(this._relativeOffset, invTransformMatrix, this._targetRelative);
+      this._targetRelative.negate();
+
+      // 计算相机的局部正上方向，使其与旋转的theta匹配
+      const deltaTheta = this._relativeSphericalDelta.theta;
+      const rotateYaxis = new Matrix();
+      Matrix.rotationAxisAngle(new Vector3(0, 1, 0), deltaTheta, rotateYaxis);
+      Vector3.transformToVec3(this._upRelative, rotateYaxis, this._upRelative);
+    }
+
+    // 计算相机在世界坐标系下的观察方向和正上方向
+    const targetWorld = new Vector3();
+    const upWorld = new Vector3();
+    Vector3.transformToVec3(this._targetRelative, transformMatrix, targetWorld);
+    targetWorld.add(this._position);
+    Vector3.transformToVec3(this._upRelative, transformMatrix, upWorld);
 
     this.camera.transform.position = this._position;
-    this.camera.transform.lookAt(this.target, this.up);
+    this.camera.transform.lookAt(targetWorld, upWorld);
 
     if (this.enableDamping === true) {
       this._sphericalDump.theta *= 1 - this.dampingFactor;
@@ -255,50 +315,46 @@ export class OrbitControl {
       this._zoomFrag = 0;
     }
 
+    this._relativeSphericalDelta.set(0, 0, 0);
     this._scale = 1;
-    this._panOffset.set(0, 0, 0);
   }
 
   /**
-   * Handle left and right translation.
-   * @param distance Camera translation distance.
-   * @param worldMatrix Camera's world coordinate matrix.
+   * Pan left and right.
+   * @param radian Rotation angle, radian system.
    */
-  panLeft(distance: number, worldMatrix: Matrix) {
-    const e = worldMatrix.elements;
-    this._vPan.set(e[0], e[1], e[2]);
-    this._vPan.scale(distance);
-    this._panOffset.add(this._vPan);
+  panLeft(radian: number) {
+    this._sphericalDelta.theta -= radian;
+    if (this.enableDamping) {
+      this._sphericalDump.theta = -radian;
+    }
   }
 
   /**
-   * Handle up and down translation.
-   * @param distance Camera translation distance.
-   * @param worldMatrix Camera's world coordinate matrix.
+   * Pan up and down.
+   * @param radian Rotation angle, radian system.
    */
-  panUp(distance: number, worldMatrix: Matrix) {
-    const e = worldMatrix.elements;
-    this._vPan.set(e[4], e[5], e[6]);
-    this._vPan.scale(distance);
-    this._panOffset.add(this._vPan);
+  panUp(radian: number) {
+    this._sphericalDelta.phi -= radian;
+    if (this.enableDamping) {
+      this._sphericalDump.phi = -radian;
+    }
   }
 
   /**
-   * Pan according to panLeft and panUp.
-   * @param deltaX The difference between the mouse and the x-direction of the previous view.
-   * @param deltaY The difference between the mouse and the y-direction of the previous view
+   * Rotate left and right the camera around a point.
+   * @param radian Rotation angle, radian system.
    */
-  pan(deltaX: number, deltaY: number) {
-    // perspective only
-    const position: Vector3 = this.camera.transform.position;
-    this._vPan = position.clone();
-    this._vPan.subtract(this.target);
-    let targetDistance = this._vPan.length();
+  rotateLeft(radian: number) {
+    this._relativeSphericalDelta.theta = radian;
+  }
 
-    targetDistance *= (this.fov / 2) * (Math.PI / 180);
-    // 我们在这里只使用clientHeight，这样纵横比不会扭曲速度
-    this.panLeft(-2 * deltaX * (targetDistance / this.mainElement.clientHeight), this.camera.transform.worldMatrix);
-    this.panUp(2 * deltaY * (targetDistance / this.mainElement.clientHeight), this.camera.transform.worldMatrix);
+  /**
+   * Rotate up and down the camera around a point.
+   * @param radian Rotation angle, radian system.
+   */
+  rotateUp(radian: number) {
+    this._relativeSphericalDelta.phi = radian;
   }
 
   /**
@@ -328,24 +384,48 @@ export class OrbitControl {
   }
 
   /**
-   * Rotate left and right.
-   * @param radian Rotation angle, radian system.
+   * 根据鼠标事件的坐标拾取椭球的点的世界坐标
+   * @param event Mouse event.
+   * @param rayCastedGlobe Globe entity.
+   * TODO: 应该放在Math or Camera模块里面，需要canvas的高度和宽度
    */
-  rotateLeft(radian: number) {
-    this._sphericalDelta.theta -= radian;
-    if (this.enableDamping) {
-      this._sphericalDump.theta = -radian;
-    }
-  }
+  getMouseCickedPoint(event: MouseEvent, rayCastedGlobe: RayCastedGlobe): Vector3 | undefined {
+    // 获取canvas的坐标->clip坐标->near plane上的世界坐标
+    // ->得到光线->判断是否相交以及交点
+    const clipPos: Vector3 = new Vector3();
+    const canvasWidth = this.mainElement.clientWidth;
+    const canvasHeight = this.mainElement.clientHeight;
+    clipPos.x = (event.clientX - canvasWidth / 2) / canvasWidth;
+    clipPos.y = -(event.clientY - canvasHeight / 2) / canvasHeight;
+    clipPos.z = 1.0;
 
-  /**
-   * Rotate up and down.
-   * @param radian Rotation angle, radian system.
-   */
-  rotateUp(radian: number) {
-    this._sphericalDelta.phi -= radian;
-    if (this.enableDamping) {
-      this._sphericalDump.phi = -radian;
+    clipPos.set(0.0, 0.0, 1.0);
+
+    const viewMatrix = this.camera.viewMatrix;
+    const projectionMatrix = this.camera.projectionMatrix;
+    const invVPMatrix = new Matrix();
+    Matrix.multiply(projectionMatrix, viewMatrix, invVPMatrix);
+    invVPMatrix.invert();
+
+    const worldPos: Vector3 = new Vector3();
+    Vector3.transformCoordinate(clipPos, invVPMatrix, worldPos);
+
+    const cameraPos = this.camera.transform.position;
+    const cameraPosSquared = cameraPos.clone().multiply(cameraPos);
+
+    const rayDir = worldPos.clone().subtract(cameraPos).normalize();
+
+    const i = MathUtil.rayIntersectEllipsoid(
+      cameraPos,
+      cameraPosSquared,
+      rayDir,
+      rayCastedGlobe.shape.oneOverRadiiSquared
+    );
+    if (i.intersects) {
+      const clickedPoint = cameraPos.clone().add(rayDir.scale(i.near));
+      return clickedPoint;
+    } else {
+      return undefined;
     }
   }
 
@@ -359,11 +439,21 @@ export class OrbitControl {
   }
 
   /**
+   * Set pan start when state is pan.
+   * @param event Mouse event.
+   */
+  handleMouseDownPan(event: MouseEvent) {
+    this._panStart.set(event.clientX, event.clientY);
+  }
+
+  /**
    * Set rotate start when state is rotate.
    * @param event Mouse event.
    */
   handleMouseDownRotate(event: MouseEvent) {
     this._rotateStart.set(event.clientX, event.clientY);
+    this._clickedPoint = this.getMouseCickedPoint(event, this.camera.engine.scene.globe);
+    this._clickedPointSpherical.setFromVec3(this._clickedPoint);
   }
 
   /**
@@ -375,11 +465,46 @@ export class OrbitControl {
   }
 
   /**
-   * Set pan start when state is pan.
+   * Calculate the pan difference when the mouse is moved.
    * @param event Mouse event.
    */
-  handleMouseDownPan(event: MouseEvent) {
-    this._panStart.set(event.clientX, event.clientY);
+  handleMouseMovePan(event: MouseEvent): void {
+    this._panEnd.set(event.clientX, event.clientY);
+    Vector2.subtract(this._panEnd, this._panStart, this._panDelta);
+
+    // x方向平移的百分比
+    const xDelta = 2 * Math.PI * (this._panDelta.x / this.mainElement.clientWidth) * this.relativeLevelSpeed;
+    // y方向平移的百分比
+    const yDelta = 2 * Math.PI * (this._panDelta.y / this.mainElement.clientHeight) * this.relativeLevelSpeed;
+
+    const quadrantup = new Vector3();
+    // 该矩阵使up方向绕y轴逆时针旋转45度
+    const m = new Matrix(0.5, 0, 0.5, 0, 0, 1, 0, 0, -0.5, 0, 0.5, 0, 0, 0, 0, 1);
+    Vector3.transformToVec3(this._upRelative, m, quadrantup);
+    const x = quadrantup.x;
+    const z = quadrantup.z;
+
+    // TODO：还可以再优化
+    if (x >= 0 && z >= 0) {
+      // 从上往下看
+      this.panLeft(-xDelta);
+      this.panUp(-yDelta);
+    } else if (x <= 0 && z >= 0) {
+      // 从右往左看
+      this.panLeft(yDelta);
+      this.panUp(-xDelta);
+    } else if (x <= 0 && z <= 0) {
+      // 从下往上看
+      this.panLeft(xDelta);
+      this.panUp(yDelta);
+    } else if (x >= 0 && z <= 0) {
+      // 从左往右看
+      this.panLeft(-yDelta);
+      this.panUp(xDelta);
+    }
+
+    // 将end设置为新的start
+    this._panStart = this._panEnd.clone();
   }
 
   /**
@@ -390,16 +515,14 @@ export class OrbitControl {
     this._rotateEnd.set(event.clientX, event.clientY);
     Vector2.subtract(this._rotateEnd, this._rotateStart, this._rotateDelta);
 
-    // x方向平移的百分比
-    this.rotateLeft(2 * Math.PI * (this._rotateDelta.x / this.mainElement.clientWidth) * this.relativeLevelSpeed);
-    // y方向平移的百分比
-    this.rotateUp(2 * Math.PI * (this._rotateDelta.y / this.mainElement.clientHeight) * this.relativeLevelSpeed);
-    // 将end设置为新的start
+    // TODO: 对于旋转相机来说相对层级的速度是否需要再调整
+    this.rotateLeft(2 * Math.PI * (this._rotateDelta.x / this.mainElement.clientWidth) * 2.0);
+    this.rotateUp(2 * Math.PI * (this._rotateDelta.y / this.mainElement.clientHeight) * 1.0);
     this._rotateStart = this._rotateEnd.clone();
   }
 
   /**
-   * Calculate the rotation difference when the mouse is moved.
+   * Calculate the zoom difference when the mouse is moved.
    * @param event Mouse event.
    */
   handleMouseMoveZoom(event: MouseEvent) {
@@ -413,19 +536,6 @@ export class OrbitControl {
     }
     // 将end复制到新的start
     this._zoomStart = this._zoomEnd.clone();
-  }
-
-  /**
-   * Calculate the pan difference when the mouse is moved.
-   * @param event Mouse event.
-   */
-  handleMouseMovePan(event: MouseEvent): void {
-    this._panEnd.set(event.clientX, event.clientY);
-    Vector2.subtract(this._panEnd, this._panStart, this._panDelta);
-
-    this.pan(this._panDelta.x, this._panDelta.y);
-
-    this._panStart = this._panEnd.clone();
   }
 
   /**
@@ -452,17 +562,17 @@ export class OrbitControl {
     this._isMouseUp = false;
 
     switch (event.button) {
-      case this.mouseButtons.ORBIT:
+      case this.mouseButtons.PAN:
+        this.handleMouseDownPan(event);
+        this._state = this.STATE.PAN;
+        break;
+      case this.mouseButtons.ROTATE:
         this.handleMouseDownRotate(event);
         this._state = this.STATE.ROTATE;
         break;
       case this.mouseButtons.ZOOM:
         this.handleMouseDownZoom(event);
         this._state = this.STATE.ZOOM;
-        break;
-      case this.mouseButtons.PAN:
-        this.handleMouseDownPan(event);
-        this._state = this.STATE.PAN;
         break;
     }
 
@@ -486,16 +596,14 @@ export class OrbitControl {
     event.preventDefault();
 
     switch (this._state) {
+      case this.STATE.PAN:
+        this.handleMouseMovePan(event);
+        break;
       case this.STATE.ROTATE:
         this.handleMouseMoveRotate(event);
         break;
-
       case this.STATE.ZOOM:
         this.handleMouseMoveZoom(event);
-        break;
-
-      case this.STATE.PAN:
-        this.handleMouseMovePan(event);
         break;
     }
   }
@@ -506,7 +614,6 @@ export class OrbitControl {
    */
   onMouseUp() {
     this._isMouseUp = true;
-
     this.mouseUpEvents.forEach((ele) => {
       const element = this.domElement === document ? this.domElement.body : this.domElement;
       element.removeEventListener(ele.type, ele.listener, false);

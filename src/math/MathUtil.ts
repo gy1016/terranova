@@ -1,6 +1,7 @@
 import { Ellipsoid } from "../geographic";
 import { Geodetic2 } from "./Geodetic2";
 import { Geodetic3 } from "./Geodetic3";
+import { Matrix } from "./Matrix";
 import { Vector3 } from "./Vector3";
 
 interface RayIntersect {
@@ -226,5 +227,44 @@ export class MathUtil {
    */
   static rightToGeographic(position: Vector3) {
     return new Vector3(position.z, position.x, position.y);
+  }
+
+  /**
+   * Calculate the rotation matrix between vector a and vector b.
+   * @param a vector, must be a unit vector.
+   * @param b vector, must be a unit vector.
+   * @returns rotation matrix from a to b.
+   */
+  static rotationMatrix(a: Vector3, b: Vector3): Matrix {
+    const cosTheta = Math.max(Math.min(Vector3.dot(a, b), 1.0), 0.0);
+    const theta = Math.acos(cosTheta);
+    const transformMatrix = new Matrix();
+    if (theta <= 1e-6) {
+      return transformMatrix;
+    }
+    // 计算旋转轴
+    const axis = new Vector3();
+    Vector3.cross(a, b, axis);
+    axis.normalize();
+    // 计算旋转矩阵的各项系数
+    const ux = axis.x;
+    const uy = axis.y;
+    const uz = axis.z;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    const oneMinusCos = 1 - cos;
+    // 计算旋转矩阵
+    const m11 = cos + ux ** 2 * oneMinusCos;
+    const m12 = ux * uy * oneMinusCos - uz * sin;
+    const m13 = ux * uz * oneMinusCos + uy * sin;
+    const m21 = uy * ux * oneMinusCos + uz * sin;
+    const m22 = cos + uy ** 2 * oneMinusCos;
+    const m23 = uy * uz * oneMinusCos - ux * sin;
+    const m31 = uz * ux * oneMinusCos - uy * sin;
+    const m32 = uz * uy * oneMinusCos + ux * sin;
+    const m33 = cos + uz ** 2 * oneMinusCos;
+
+    transformMatrix.set(m11, m21, m31, 0, m12, m22, m32, 0, m13, m23, m33, 0, 0, 0, 0, 1);
+    return transformMatrix;
   }
 }
