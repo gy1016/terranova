@@ -34,7 +34,7 @@ terrainDiv.onclick = () => {
     scene.addLayer(elevationLayer);
   } else {
     const layers = scene.layers;
-    layers.filter((layer) => !(layer instanceof ElevationLayer));
+    scene.layers = layers.filter((layer) => !(layer instanceof ElevationLayer));
   }
 };
 
@@ -64,6 +64,6 @@ heatmapDiv.onclick = () => {
       });
   } else {
     const layers = scene.layers;
-    layers.filter((layer) => !(layer instanceof HeatMapLayer));
+    scene.layers = layers.filter((layer) => !(layer instanceof HeatMapLayer));
   }
 };

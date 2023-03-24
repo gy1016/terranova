@@ -14,3 +14,11 @@
 - Modified the packaged entry file.
 
 - Extract the shader function for ray tracing and drawing ellipsoid.
+
+### 0.0.4 - 2023-03-22
+
+#### Fine-tune track control speed
+
+- Choose base based on camera hierarchy.
+
+- Cancel the ray tracing ellipsoid lighting model.
