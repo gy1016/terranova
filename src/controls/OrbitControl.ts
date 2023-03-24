@@ -133,8 +133,8 @@ export class OrbitControl {
     // Reuse objects to prevent excessive stack allocation.
     // update
     this._position = new Vector3();
-    this._targetRelative = new Vector3(-0.1, -1, 0);
-    this._upRelative = new Vector3(-1, 0.1, 0);
+    this._targetRelative = new Vector3(-0.001, -1, 0);
+    this._upRelative = new Vector3(-1, 0, 0);
     this._offset = new Vector3();
     this._spherical = new Spherical();
     this._sphericalDelta = new Spherical();
