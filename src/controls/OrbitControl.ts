@@ -61,12 +61,16 @@ export class OrbitControl {
   rotateSpeed: number;
   /** Clicking the corresponding key with the mouse is actually the key corresponding to the left button, the scroll wheel and the right button. */
   mouseButtons: { ORBIT: number; ZOOM: number; PAN: number };
+  touchFingers: { ORBIT: number; ZOOM: number; PAN: number };
   /** What state is the current controller in. */
   STATE: {
+    TOUCH_ROTATE: number;
     ROTATE: number;
+    TOUCH_PAN: number;
     ZOOM: number;
     NONE: number;
     PAN: number;
+    TOUCH_ZOOM: number;
   };
   /** Contains mousemove and mouseup. */
   mouseUpEvents: { listener: any; type: string }[];
@@ -124,6 +128,12 @@ export class OrbitControl {
       PAN: 2,
     };
 
+    this.touchFingers = {
+      ORBIT: 1,
+      ZOOM: 2,
+      PAN: 3,
+    };
+
     // Reuse objects to prevent excessive stack allocation.
     // update
     this._position = new Vector3();
@@ -157,12 +167,18 @@ export class OrbitControl {
       ROTATE: 0,
       ZOOM: 1,
       PAN: 2,
+      TOUCH_ROTATE: 3,
+      TOUCH_ZOOM: 4,
+      TOUCH_PAN: 5,
     };
     this._state = this.STATE.NONE;
 
     this.constEvents = [
       { type: "mousedown", listener: this.onMouseDown.bind(this) },
       { type: "wheel", listener: this.onMouseWheel.bind(this) },
+      { type: "touchstart", listener: this.onTouchStart.bind(this) },
+      { type: "touchmove", listener: this.onTouchMove.bind(this) },
+      { type: "touchend", listener: this.onTouchEnd.bind(this) },
     ];
 
     this.mouseUpEvents = [
@@ -527,5 +543,157 @@ export class OrbitControl {
     event.stopPropagation();
 
     this.handleMouseWheel(event);
+  }
+
+  /**
+   * Total handling of touch start events.
+   */
+  onTouchStart(event: TouchEvent) {
+    this._isMouseUp = false;
+
+    switch (event.touches.length) {
+      case this.touchFingers.ORBIT:
+        if (this.enableRotate === false) return;
+
+        this.handleTouchStartRotate(event);
+        this._state = this.STATE.TOUCH_ROTATE;
+
+        break;
+
+      case this.touchFingers.ZOOM:
+        if (this.enableZoom === false) return;
+
+        this.handleTouchStartZoom(event);
+        this._state = this.STATE.TOUCH_ZOOM;
+
+        break;
+
+      case this.touchFingers.PAN:
+        if (this.enablePan === false) return;
+
+        this.handleTouchStartPan(event);
+        this._state = this.STATE.TOUCH_PAN;
+
+        break;
+
+      default:
+        this._state = this.STATE.NONE;
+    }
+  }
+
+  /**
+   * Total handling of touch movement events.
+   */
+  onTouchMove(event: TouchEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    switch (event.touches.length) {
+      case this.touchFingers.ORBIT:
+        if (this.enableRotate === false) return;
+        if (this._state !== this.STATE.TOUCH_ROTATE) return;
+        this.handleTouchMoveRotate(event);
+
+        break;
+
+      case this.touchFingers.ZOOM:
+        if (this.enableZoom === false) return;
+        if (this._state !== this.STATE.TOUCH_ZOOM) return;
+        this.handleTouchMoveZoom(event);
+
+        break;
+
+      case this.touchFingers.PAN:
+        if (this.enablePan === false) return;
+        if (this._state !== this.STATE.TOUCH_PAN) return;
+        this.handleTouchMovePan(event);
+
+        break;
+
+      default:
+        this._state = this.STATE.NONE;
+    }
+  }
+
+  /**
+   * Total handling of touch end events.
+   */
+  onTouchEnd() {
+    this._isMouseUp = true;
+    this._state = this.STATE.NONE;
+  }
+
+  /**
+   * Rotation parameter update when touch is dropped.
+   */
+  handleTouchStartRotate(event: TouchEvent) {
+    this._rotateStart.set(event.touches[0].pageX, event.touches[0].pageY);
+  }
+
+  /**
+   * Zoom parameter update when touch down.
+   */
+  handleTouchStartZoom(event: TouchEvent) {
+    const dx = event.touches[0].pageX - event.touches[1].pageX;
+    const dy = event.touches[0].pageY - event.touches[1].pageY;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    this._zoomStart.set(0, distance);
+  }
+
+  /**
+   * Update the translation parameter when touch down.
+   */
+  handleTouchStartPan(event: TouchEvent) {
+    this._panStart.set(event.touches[0].pageX, event.touches[0].pageY);
+  }
+
+  /**
+   * Rotation parameter update when touch to move.
+   */
+  handleTouchMoveRotate(event: TouchEvent) {
+    this._rotateEnd.set(event.touches[0].pageX, event.touches[0].pageY);
+    Vector2.subtract(this._rotateEnd, this._rotateStart, this._rotateDelta);
+
+    this.rotateLeft(((2 * Math.PI * this._rotateDelta.x) / this.mainElement.clientWidth) * this.relativeLevelSpeed);
+    this.rotateUp(((2 * Math.PI * this._rotateDelta.y) / this.mainElement.clientHeight) * this.relativeLevelSpeed);
+
+    this._rotateStart = this._rotateEnd.clone();
+  }
+
+  /**
+   * Zoom parameter update when touch to move.
+   */
+  handleTouchMoveZoom(event) {
+    const dx = event.touches[0].pageX - event.touches[1].pageX;
+    const dy = event.touches[0].pageY - event.touches[1].pageY;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    this._zoomEnd.set(0, distance);
+
+    Vector2.subtract(this._zoomEnd, this._zoomStart, this._zoomDelta);
+
+    if (this._zoomDelta.y > 0) {
+      this.zoomIn(this.getZoomScale());
+    } else if (this._zoomDelta.y < 0) {
+      this.zoomOut(this.getZoomScale());
+    }
+
+    this._zoomStart = this._zoomEnd.clone();
+  }
+
+  /**
+   * Pan parameter update when touch moves.
+   */
+  handleTouchMovePan(event: TouchEvent) {
+    this._panEnd.set(event.touches[0].pageX, event.touches[0].pageY);
+
+    Vector2.subtract(this._panEnd, this._panStart, this._panDelta);
+
+    this.pan(this._panDelta.x, this._panDelta.y);
+
+    this._panStart = this._panEnd.clone();
   }
 }
