@@ -9,26 +9,26 @@ let tileMode = "real",
   terrainShow = false,
   heatmapShow = false;
 
-const whuer3d = new Engine("gy");
-const scene = whuer3d.scene;
-whuer3d.run();
+const terranova = new Engine("gy");
+const scene = terranova.scene;
+terranova.run();
 
 toggleDiv.onclick = () => {
   tileMode = tileMode === "real" ? "street" : "real";
   scene.layers.pop();
   if (tileMode === "street") {
     toggleImg.src = "./assets/imgs/real.png";
-    scene.layers.push(new ArcGISLayer(whuer3d, 2));
+    scene.layers.push(new ArcGISLayer(terranova, 2));
   } else {
     toggleImg.src = "./assets/imgs/street.png";
-    scene.layers.push(new GoogleLayer(whuer3d, 2));
+    scene.layers.push(new GoogleLayer(terranova, 2));
   }
 };
 
 terrainDiv.onclick = () => {
   terrainShow = !terrainShow;
   if (terrainShow) {
-    const elevationLayer = new ElevationLayer(whuer3d, {
+    const elevationLayer = new ElevationLayer(terranova, {
       exaggerationFactor: 30,
     });
     scene.addLayer(elevationLayer);
@@ -42,7 +42,7 @@ heatmapDiv.onclick = () => {
   heatmapShow = !heatmapShow;
   if (heatmapShow) {
     const heatPoints = [];
-    const heatLayer = new HeatMapLayer(whuer3d, {
+    const heatLayer = new HeatMapLayer(terranova, {
       radius: 10,
       tileSize: 256,
       gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],

@@ -5,7 +5,7 @@
 #### Add workers to generate heat maps
 
 - Modified the packaged entry file.
-- Whuer3d added worker files for native and edge calculation heatmaps.
+- Terranova added worker files for native and edge calculation heatmaps.
 
 ### 0.0.3 - 2023-03-22
 

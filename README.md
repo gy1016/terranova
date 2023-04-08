@@ -1,21 +1,21 @@
 <!-- PROJECT LOGO -->
 <div align="center">
 
-# whuer3d
+# terranova
 
 _✨ Author: lamb ✨_
 
 </div>
 
 <p align="center">
-  <a href="https://github.com/gy1016/whuer3d">
-    <img src="https://img.shields.io/badge/Github-whuer3d-brightgreen?logo=github" alt="repo_whuer3d">
+  <a href="https://github.com/gy1016/terranova">
+    <img src="https://img.shields.io/badge/Github-terranova-brightgreen?logo=github" alt="repo_whuer3d">
   </a>
-  <a href="https://www.npmjs.com/package/whuer3d">
-    <img src="https://img.shields.io/npm/v/whuer3d" alt="npm_whuer3d">
+  <a href="https://www.npmjs.com/package/terranova">
+    <img src="https://img.shields.io/npm/v/terranova" alt="npm_whuer3d">
   </a>
   <a href="stargazers">
-    <img src="https://img.shields.io/github/stars/gy1016/whuer3d?color=yellow&label=Github%20Stars" alt="star_whuer3d">
+    <img src="https://img.shields.io/github/stars/gy1016/terranova?color=yellow&label=Github%20Stars" alt="star_whuer3d">
   </a>
 </p>
 
@@ -31,7 +31,7 @@ _✨ Author: lamb ✨_
 
 ## 深度冲突
 
-众所周知 z<sub>eye</sub> 与 z<sub>window</sub> 并不是线性映射关系，而是呈现一个反比例函数关系，故在远平面会出现深度冲突的问题。whuer3d 选用的解决方案是在顶点 shader 中采用对数深度缓冲方案来进行解决，其核心是根据常数 constant 和远平面距离 f 来进行深度值改写，代码如下：
+众所周知 z<sub>eye</sub> 与 z<sub>window</sub> 并不是线性映射关系，而是呈现一个反比例函数关系，故在远平面会出现深度冲突的问题。terranova 选用的解决方案是在顶点 shader 中采用对数深度缓冲方案来进行解决，其核心是根据常数 constant 和远平面距离 f 来进行深度值改写，代码如下：
 
 ```glsl
 uniform float u_Far;
@@ -83,11 +83,11 @@ $$
   \right]
 $$
 
-我们注意观察第四列，该矩阵在 CPU 当中我们可以使用双精度浮点来进行表示，但当该矩阵上传至 GPU 的时候，就会出现 64 位到 32 位的跳变失真，这就是在虚拟地球应用中顶点位置抖动的根本原因，在 whuer3d 中我们会采用 GPU RTE 的方式去解决这个问题。
+我们注意观察第四列，该矩阵在 CPU 当中我们可以使用双精度浮点来进行表示，但当该矩阵上传至 GPU 的时候，就会出现 64 位到 32 位的跳变失真，这就是在虚拟地球应用中顶点位置抖动的根本原因，在 terranova 中我们会采用 GPU RTE 的方式去解决这个问题。
 
 # 架构
 
-whuer3d 目前包含六大模块，架构图如下所示：
+terranova 目前包含六大模块，架构图如下所示：
 
 ![Engine Architecture](http://121.199.160.202/images/project/lamb3d/struct.png)
 
@@ -106,7 +106,7 @@ whuer3d 目前包含六大模块，架构图如下所示：
 首先我们使用 pnpm 来安装：
 
 ```bash
-pnpm install whuer3d
+pnpm install terranova
 ```
 
 然后我们创建一个画布标签并指定 id：
@@ -118,10 +118,10 @@ pnpm install whuer3d
 最后，我们写一段 js 代码：
 
 ```js
-import { Engine } from "whuer3d";
+import { Engine } from "terranova";
 
-const whuer3d = new Engine("lamb");
-whuer3d.run();
+const terranova = new Engine("lamb");
+terranova.run();
 ```
 
 我们来看看效果：
@@ -133,10 +133,10 @@ whuer3d.run();
 热力图层使用 WASM 进行生成，有着足够好的运算性能，我们模拟武汉边界内的一些热力点位，使用方式如下：
 
 ```js
-import { Engine } from "whuer3d";
+import { Engine } from "terranova";
 
 // 实例化引擎
-const whuer3d = new Engine(
+const terranova = new Engine(
   "lamb",
   {
     cameraPos: new Vector3(0, 0, 6378137 * 3),
@@ -147,7 +147,7 @@ const whuer3d = new Engine(
 );
 
 // 实例化热力图层
-const heatMapLayer = new HeatMapLayer(whuer3d, {
+const heatMapLayer = new HeatMapLayer(terranova, {
   // 热力点的影响半径
   radius: 10,
   // 热力瓦片的大小
@@ -170,8 +170,8 @@ for (let i = 0; i < 10000; i++)
 // 将点位增加到热力图层当中
 heatMapLayer.addPoints(heatPoints);
 // 将热力图层增加到引擎场景当中
-whuer3d.scene.addLayer(heatMapLayer);
-whuer3d.run();
+terranova.scene.addLayer(heatMapLayer);
+terranova.run();
 ```
 
 我们来看看效果：
