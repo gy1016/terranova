@@ -47,7 +47,7 @@ heatmapDiv.onclick = () => {
       tileSize: 256,
       gradient: ["00AAFF", "00FF00", "FFFF00", "FF8800", "FF0000"],
       maxHeat: 20,
-      mode: "native",
+      mode: "wasm",
     });
     fetch("http://121.199.160.202:9999/query?tag=89")
       .then((res) => res.json())

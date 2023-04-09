@@ -56,7 +56,7 @@ export default [
     ],
   },
   {
-    input: "./src/wasm/heat-map.native.worker.js",
+    input: "./src/wasm/heat-map.javascript.worker.js",
     output: [
       {
         dir: "dist/wasm",
@@ -67,7 +67,7 @@ export default [
     plugins: [resolve()],
   },
   {
-    input: "./src/wasm/heat-map.edge.worker.js",
+    input: "./src/wasm/heat-map.network.worker.js",
     output: [
       {
         dir: "dist/wasm",

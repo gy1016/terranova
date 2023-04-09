@@ -17,7 +17,7 @@ export interface HeatMapLayerConfig {
   // 热力点位中最大热力值
   maxHeat: number;
   // 生成热力图的模式
-  mode?: "native" | "wasm" | "edge";
+  mode?: "javascript" | "wasm" | "network";
 }
 
 /**
@@ -44,7 +44,7 @@ export class HeatMapLayer extends Layer {
   // 热力图最大热力值
   maxHeat: number;
   // 热力图生成模式
-  mode: "native" | "wasm" | "edge";
+  mode: "javascript" | "wasm" | "network";
   // 缓存的热力瓦片
   tiles: Map<string, Tile>;
   // 子线程实例
@@ -95,7 +95,7 @@ export class HeatMapLayer extends Layer {
     this.gradient = gradient;
     this.maxHeat = maxHeat;
     this.tileSize = tileSize;
-    this.mode = mode ?? "wasm";
+    this.mode = mode ?? "javascript";
     this.processor = new TaskProcessor(`./wasm/heat-map.${this.mode}.worker.js`);
     this.processor.scheduleTask("initHeatMapMiddleware", {
       ...config,
@@ -188,7 +188,7 @@ export class HeatMapLayer extends Layer {
       // 有可能此时tiles已经更换了层级，所以当tile不存在时直接return
       const tile = this.tiles.get(Tile.generateKey(tileInfo.level, tileInfo.row, tileInfo.col));
       if (!tile) return;
-      if (this.mode === "native") {
+      if (this.mode === "javascript") {
         // TODO: 频繁的创建有问题
         const canvas = document.createElement("canvas");
         canvas.height = this.tileSize;
