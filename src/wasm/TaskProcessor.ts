@@ -20,8 +20,22 @@ export default class TaskProcessor {
    * @returns Worker实例
    */
   private static createWorker(processor: TaskProcessor) {
-    // TODO: 文件路径处理有误
-    const worker = new Worker(processor._workerPth);
+    // TODO: 打包怎么处理还没有解决
+    let workerPath = "";
+    // 判断是源码开发还是当作第三方包使用
+    const include = /node_modules/gi.test(import.meta.url);
+    // 如果包含则裁剪到node_modules下面
+    if (include) {
+      workerPath =
+        import.meta.url.substring(0, import.meta.url.lastIndexOf("node_modules") + 12) +
+        "/" +
+        "terranova/dist/" +
+        processor._workerPth;
+    } else {
+      workerPath = processor._workerPth;
+    }
+
+    const worker = new Worker(workerPath);
 
     worker.onmessage = function (event) {
       processor.completeTask(event.data);
