@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <div align="center">
 
-# terranova
+# Terranova
 
 _✨ Author: lamb ✨_
 
@@ -27,77 +27,7 @@ _✨ Author: lamb ✨_
 
 # 文档
 
-你可以在这个[语雀文档](https://www.yuque.com/shengaoyang-rl1fl/apm3zh)中看到引擎中各个模块的设计构思，以及我的一些想法，由 Typedoc 生成的引擎文档在[这](http://www.sgyat.cn/lamb3d/)！
-
-## 深度冲突
-
-众所周知 z<sub>eye</sub> 与 z<sub>window</sub> 并不是线性映射关系，而是呈现一个反比例函数关系，故在远平面会出现深度冲突的问题。terranova 选用的解决方案是在顶点 shader 中采用对数深度缓冲方案来进行解决，其核心是根据常数 constant 和远平面距离 f 来进行深度值改写，代码如下：
-
-```glsl
-uniform float u_Far;
-
-vec4 modelToClipCoordinates(vec4 position, mat4 mvpMat, bool enable, float constant, float far)
-{
-  vec4 clip = mvpMat * position;
-  if(enable)
-  {
-    clip.z = ((2.0 * log(constant * clip.z + 1.0) / log(constant * far + 1.0)) - 1.0) * clip.w;
-  }
-  return clip;
-}
-```
-
-## 顶点精度冲突
-
-目前，大部分的 GPU 只支持 32 位浮点精度，这对于大范围的类似于 WGS84 坐标系来说是不够的。我们可以看一段 C 语言代码：
-
-```c
-float f1 = 6378137.0;
-printf("%f\n", f1);     // 6378137.000000
-
-float f2 = 6378137.05;  
-printf("%f\n", f2);     // 6378137.000000
-
-float f3 = 6378137.5;  
-printf("%f\n", f3);     // 6378137.500000
-
-float f4 = 6378137.9;  
-printf("%f\n", f4);     // 6378138.000000
-
-float f5 = 996378137.9;  
-printf("%f\n", f5);     // 996378112.000000
-```
-
-我们可以发现 32 浮点输出结果和我们预想的差很多，因为 32 位浮点数有效位数是“7 或 8 位”，这个可以看 IEEE754 中浮点数的存储结构，这里有一篇我觉得不错的[文章](https://zhuanlan.zhihu.com/p/343033661)。CPU 支持 64 位双精度，能够提供足够的精度支持，因此，在很多应用中，都采用 CPU 使用双精度计算替换 GPU 计算来消除抖动。我们来看一个具体的抖动案例：
-
-假设顶点的坐标是(6378137.0, 0, 0)，当视点离它有 800m 远，且视点绕着这个点旋转时，顶点开始抖动，当视点逐渐拉近时，抖动越来越明显。为什么会有抖动？为什么视点拉近时，抖动会越来越明显？根据当前位置计算出来的视图矩阵如下所示：
-
-$$
- \left[
- \begin{matrix}
-   0.78 & 0.63 & 0.00 & -4946218.10 \\
-   0.20 & -0.25 & 0.95 & -13304368.35 \\
-   0.60 & -0.73 & -0.32 & -3810548.19 \\
-   0.00 & 0.00 & 0.00 & 1.00 \\
-  \end{matrix}
-  \right]
-$$
-
-我们注意观察第四列，该矩阵在 CPU 当中我们可以使用双精度浮点来进行表示，但当该矩阵上传至 GPU 的时候，就会出现 64 位到 32 位的跳变失真，这就是在虚拟地球应用中顶点位置抖动的根本原因，在 terranova 中我们会采用 GPU RTE 的方式去解决这个问题。
-
-# 架构
-
-terranova 目前包含六大模块，架构图如下所示：
-
-![Engine Architecture](http://121.199.160.202/images/project/lamb3d/struct.png)
-
-引擎最重要和最基本的模块是程序如何组织和管理数据以及如何与 GPU 进行通信。 图形模块用于创建缓冲区对象并存储顶点和索引数据。 架构如下：
-
-![Graphic Module](http://121.199.160.202/images/project/lamb3d/graphic.png)
-
-着色器模块用于管理 WebGL 程序上下文和数据上传。 架构如下：
-
-![Shader Module](http://121.199.160.202/images/project/lamb3d/shader.png)
+Terranova 的[官网]()在这里！
 
 # 案例
 
