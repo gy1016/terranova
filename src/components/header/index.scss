@@ -1,4 +1,57 @@
 #header {
+  width: 100%;
+  height: 6rem;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
+  border-bottom: 1px solid rgb(230, 232, 235);
+
+  .logo {
+    img {
+      height: 4rem;
+    }
+  }
+
+  .menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 2rem;
+
+      div {
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+        margin-right: 2rem;
+        &:hover {
+          cursor: pointer;
+          color: rgb(0, 165, 241);
+        }
+
+        img {
+          width: 2rem;
+        }
+      }
+
+      .switch-button {
+        border: 1px solid rgb(230, 232, 235);
+        background-color: #f1f3f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 2.3rem;
+        height: 2.3rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+
+        img {
+          width: 100%;
+        }
+      }
+    }
+  }
 }
