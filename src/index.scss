@@ -8,3 +8,15 @@ body {
   text-align: center;
   box-sizing: border-box;
 }
+
+/* 设置滚动条的宽度和背景颜色 */
+::-webkit-scrollbar {
+  width: 6px;
+  background-color: #f5f5f5;
+}
+
+/* 设置滚动条滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #c2c2c2;
+  border-radius: 10px;
+}
