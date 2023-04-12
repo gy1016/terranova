@@ -1,0 +1,31 @@
+name: Docs
+on:
+  push:
+    branches:
+      - document
+jobs:
+  release:
+    name: Docs
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install
+        run: |
+          npm install
+          npm run build
+      - name: Copy worker
+        run: |
+          cp ./node_modules/terranova/dist/wasm/*worker* ./dist/wasm/
+      - name: Docs
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: dist
