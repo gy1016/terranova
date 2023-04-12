@@ -23,6 +23,7 @@ jobs:
       - name: Copy worker
         run: |
           rm -rf ./dist/vite.svg
+          mkdir ./dist/wasm
           cp ./node_modules/terranova/dist/wasm/*worker* ./dist/wasm/
       - name: Docs
         uses: JamesIves/github-pages-deploy-action@3.7.1
