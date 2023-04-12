@@ -129,8 +129,12 @@
 
     #tilemap {
       right: 14rem;
-      background: url('@/assets/imgs/street.png') no-repeat center center;
-      background-size: cover;
+      // background: url('@/assets/imgs/street.png') no-repeat center center;
+      // background-size: cover;
+      img {
+        width: 100%;
+        height: 100%;
+      }
     }
 
     #terrain {
