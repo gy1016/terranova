@@ -2,6 +2,9 @@ import { Helmet } from 'react-helmet';
 import { injectIntl, useIntl } from 'react-intl';
 import Header from '../header';
 import Footer from '../footer';
+import Banner from './Banner';
+import Feature from './Feature';
+import './index.scss';
 
 function Home() {
   const intl = useIntl();
@@ -19,7 +22,8 @@ function Home() {
         />
       </Helmet>
       <Header />
-      <div style={{ height: '100rem', marginTop: '6rem' }}>haha</div>
+      <Banner />
+      <Feature />
       <Footer />
     </>
   );

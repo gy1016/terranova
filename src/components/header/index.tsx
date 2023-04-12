@@ -1,9 +1,7 @@
-import { FileTwoTone, AlertTwoTone } from '@ant-design/icons';
 import logo from '@/assets/logo.svg';
 import github from '@/assets/github.svg';
 import site from '@/assets/site.svg';
 import sun from '@/assets/sun.svg';
-import moon from '@/assets/moon.svg';
 import translate from '@/assets/translate.svg';
 import './index.scss';
 
