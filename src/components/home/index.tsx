@@ -4,6 +4,7 @@ import Header from '../header';
 import Footer from '../footer';
 import Banner from './Banner';
 import Feature from './Feature';
+import Cases from './Cases';
 import './index.scss';
 
 function Home() {
@@ -24,6 +25,7 @@ function Home() {
       <Header />
       <Banner />
       <Feature />
+      <Cases />
       <Footer />
     </>
   );

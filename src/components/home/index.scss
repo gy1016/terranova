@@ -91,3 +91,52 @@
     text-align: justify;
   }
 }
+
+.cases {
+  padding: 3rem 0;
+
+  h2 {
+    font-size: 4.2rem;
+    color: #11181c;
+    letter-spacing: 0.5rem;
+    padding-bottom: 3rem;
+  }
+
+  .container {
+    width: 100%;
+    padding: 0 20rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .case {
+      width: 100%;
+      height: 40rem;
+      margin-bottom: 3rem;
+      display: flex;
+
+      canvas {
+        width: 50%;
+        height: 100%;
+      }
+    }
+
+    .case1 > canvas,
+    .case3 > canvas {
+      border-right: 1px solid rgb(230, 232, 235);
+      margin-right: 3rem;
+    }
+
+    .case2 > canvas {
+      border-left: 1px solid rgb(230, 232, 235);
+      margin-left: 3rem;
+    }
+
+    p {
+      color: hsl(206, 6%, 43.5%);
+      font-size: 2rem;
+      line-height: 2em;
+      text-align: justify;
+    }
+  }
+}
