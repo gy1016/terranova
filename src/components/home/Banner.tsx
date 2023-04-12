@@ -1,6 +1,6 @@
-import logo from '@/assets/logo.svg';
-import github from '@/assets/github.svg';
-import heart from '@/assets/heart.svg';
+import logo from '@/assets/svgs/logo.svg';
+import github from '@/assets/svgs/github.svg';
+import heart from '@/assets/svgs/heart.svg';
 
 function Banner() {
   return (

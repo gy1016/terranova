@@ -1,8 +1,8 @@
-import logo from '@/assets/logo.svg';
-import github from '@/assets/github.svg';
-import site from '@/assets/site.svg';
-import sun from '@/assets/sun.svg';
-import translate from '@/assets/translate.svg';
+import logo from '@/assets/svgs/logo.svg';
+import github from '@/assets/svgs/github.svg';
+import site from '@/assets/svgs/site.svg';
+import sun from '@/assets/svgs/sun.svg';
+import translate from '@/assets/svgs/translate.svg';
 import './index.scss';
 
 function Header() {
