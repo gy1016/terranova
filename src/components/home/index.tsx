@@ -19,7 +19,7 @@ function Home() {
         />
       </Helmet>
       <Header />
-      <div style={{ height: '1000px' }}>haha</div>
+      <div style={{ height: '100rem', marginTop: '6rem' }}>haha</div>
       <Footer />
     </>
   );

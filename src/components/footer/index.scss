@@ -2,5 +2,12 @@ footer {
   height: 6rem;
   line-height: 6rem;
   font-size: 1.5rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   border-top: 1px solid rgb(230, 232, 235);
+
+  .heart {
+    margin: 0 0.5rem;
+    color: red;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1);
+  }
 }
