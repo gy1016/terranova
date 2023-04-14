@@ -9,13 +9,13 @@ _✨ Author: lamb ✨_
 
 <p align="center">
   <a href="https://github.com/gy1016/terranova">
-    <img src="https://img.shields.io/badge/Github-terranova-brightgreen?logo=github" alt="repo_whuer3d">
+    <img src="https://img.shields.io/badge/Github-terranova-brightgreen?logo=github" alt="repo_terranova">
   </a>
   <a href="https://www.npmjs.com/package/terranova">
-    <img src="https://img.shields.io/npm/v/terranova" alt="npm_whuer3d">
+    <img src="https://img.shields.io/npm/v/terranova" alt="npm_terranova">
   </a>
   <a href="stargazers">
-    <img src="https://img.shields.io/github/stars/gy1016/terranova?color=yellow&label=Github%20Stars" alt="star_whuer3d">
+    <img src="https://img.shields.io/github/stars/gy1016/terranova?color=yellow&label=Github%20Stars" alt="star_terranova">
   </a>
 </p>
 
@@ -23,11 +23,11 @@ _✨ Author: lamb ✨_
 
 # 介绍
 
-由空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。借鉴 [oasis](https://github.com/oasis-engine/engine) 对渲染上下文的封装，并增添 GIS 领域算法与模块，实现新的三维虚拟地球应用。
+由空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。参考借鉴 [oasis](https://github.com/oasis-engine/engine) 对渲染上下文的封装，并增添 GIS 领域算法与模块，实现新的三维虚拟地球应用。
 
 # 文档
 
-Terranova 的[官网]()在这里！
+Terranova 的[官网](http://www.sgyat.cn/terranova/)在这里！
 
 # 案例
 
