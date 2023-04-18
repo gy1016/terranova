@@ -3,7 +3,7 @@
 
 # Terranova
 
-_✨ Author: lamb ✨_
+<!-- _✨ Author: lamb ✨_ -->
 
 </div>
 
@@ -23,7 +23,7 @@ _✨ Author: lamb ✨_
 
 # 介绍
 
-由空间信息工程研究所使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。参考借鉴 [oasis](https://github.com/oasis-engine/engine) 对渲染上下文的封装，并增添 GIS 领域算法与模块，实现新的三维虚拟地球应用。
+使用 TypeScript 编写的三维数字地球引擎，并利用 WebAssembly 实现了高性能的空间分析。 对 WebGL 进行渲染上下文的封装，并增添 GIS 领域算法与模块，实现新的三维虚拟地球应用。
 
 # 文档
 
