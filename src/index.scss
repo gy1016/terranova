@@ -14,6 +14,11 @@ body {
   box-sizing: border-box;
 }
 
+a {
+  text-decoration: none; /* 取消下划线 */
+  color: #333; /* 修改颜色 */
+}
+
 /* 设置滚动条的宽度和背景颜色 */
 ::-webkit-scrollbar {
   width: 6px;

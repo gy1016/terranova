@@ -20,8 +20,10 @@ function Banner() {
       <div className="start">
         <button className="using">开始使用→</button>
         <button>
-          <img src={github} alt="terranova github" />
-          讨论
+          <a href="https://github.com/gy1016/terranova/discussions/">
+            <img src={github} alt="terranova github" />
+            讨论
+          </a>
         </button>
         <button>
           <img src={heart} alt="terranova heart" />
