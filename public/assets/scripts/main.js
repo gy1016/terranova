@@ -1,4 +1,4 @@
-import { Engine, ArcGISLayer, GoogleLayer, ElevationLayer, HeatMapLayer } from "../../index.js";
+import { Engine, ArcGISLayer, ElevationLayer, HeatMapLayer } from "../../index.js";
 
 const toggleDiv = document.getElementById("toggle");
 const toggleImg = document.getElementById("toggle-img");
@@ -18,10 +18,10 @@ toggleDiv.onclick = () => {
   scene.layers.pop();
   if (tileMode === "street") {
     toggleImg.src = "./assets/imgs/real.png";
-    scene.layers.push(new ArcGISLayer(terranova, 2));
+    scene.layers.push(new ArcGISLayer(terranova, 2, "ChinaOnlineCommunity"));
   } else {
     toggleImg.src = "./assets/imgs/street.png";
-    scene.layers.push(new GoogleLayer(terranova, 2));
+    scene.layers.push(new ArcGISLayer(terranova, 2, "WorldImagery"));
   }
 };
 
