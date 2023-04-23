@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Engine, ElevationLayer, HeatMapLayer, HeatPoint, GoogleLayer, ArcGISLayer } from 'terranova';
+import { Engine, ElevationLayer, HeatMapLayer, HeatPoint, ArcGISLayer } from 'terranova';
 import realImg from '@/assets/imgs/real.png';
 import streetImg from '@/assets/imgs/street.png';
 
@@ -14,12 +14,12 @@ function Cases() {
     let layers = terranova.scene.layers;
     if (tileMode === 'real') {
       setTileMde('street');
-      layers = layers.filter((layer) => !(layer instanceof GoogleLayer));
-      layers.push(new ArcGISLayer(terranova, 2));
+      layers = layers.filter((layer) => !(layer instanceof ArcGISLayer));
+      layers.push(new ArcGISLayer(terranova, 2, 'ChinaOnlineCommunity'));
     } else {
       setTileMde('real');
       layers = layers.filter((layer) => !(layer instanceof ArcGISLayer));
-      layers.push(new GoogleLayer(terranova, 2));
+      layers.push(new ArcGISLayer(terranova, 2, 'WorldImagery'));
     }
     terranova.scene.layers = layers;
   };
