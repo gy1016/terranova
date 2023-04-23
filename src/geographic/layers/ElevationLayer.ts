@@ -33,7 +33,7 @@ export class ElevationLayer extends Layer {
 
     const { terrainAddress, tileAddress, exaggerationFactor } = config;
     this._terrainAddress = terrainAddress ? terrainAddress : TERRAIN_SERVICE;
-    this._tileAddress = tileAddress ? tileAddress : TILE_SERVICE_MAP["Google"];
+    this._tileAddress = tileAddress ? tileAddress : TILE_SERVICE_MAP["ArcGIS"]["WorldImagery"];
     if (exaggerationFactor !== undefined) {
       this._exaggerationFactor = exaggerationFactor;
     }

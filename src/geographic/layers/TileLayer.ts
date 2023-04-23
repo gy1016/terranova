@@ -1,5 +1,5 @@
 import { Engine, ImageMaterial, Material, Shader } from "../../core";
-import { TILE_SERVICE_MAP, TileServiceMap } from "../../config";
+import { TILE_SERVICE_MAP, TileServiceMap, TileServiceType } from "../../config";
 import { Tile } from "./Tile";
 import { TileDetails } from "./TileDetails";
 import { MathUtil, Vector3 } from "../../math";
@@ -21,10 +21,10 @@ export class TileLayer extends Layer {
   // TODO: 应该在Transform里面做
   private _cameraLastPos: Vector3 = new Vector3();
 
-  constructor(engine: Engine, level: number, service: keyof TileServiceMap) {
+  constructor(engine: Engine, level: number, service: keyof TileServiceMap, mode: TileServiceType = "WorldImagery") {
     super(engine);
     this.level = level;
-    this._address = TILE_SERVICE_MAP[service];
+    this._address = TILE_SERVICE_MAP[service][mode];
     this._loopLimit = Math.min(10, (1 << level) - 1);
     this._oneFrameRowRecords = Object.create(null);
   }
