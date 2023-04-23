@@ -6,6 +6,7 @@
   top: 0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid rgb(230, 232, 235);
   background-color: rgb(251, 252, 253);
   z-index: 999;
@@ -55,6 +56,43 @@
         img {
           width: 100%;
         }
+      }
+    }
+
+    .button {
+      margin-right: 0;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  #header {
+    .logo {
+      img {
+        height: 3rem;
+      }
+    }
+
+    .menu {
+      .word {
+        display: none;
+      }
+
+      .website {
+        display: none;
+      }
+
+      .button::after {
+        content: '';
+        display: block;
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid rgb(230, 232, 235);
+        border-radius: 0.5rem;
+        background: url('@/assets/imgs/menu.png');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
       }
     }
   }

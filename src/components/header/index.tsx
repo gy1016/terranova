@@ -12,11 +12,11 @@ function Header() {
         <img src={logo} alt="terranova logo" />
       </div>
       <div className="menu">
-        <div className="item">
+        <div className="item word">
           <div>文档</div>
           <div>示例</div>
         </div>
-        <div className="item">
+        <div className="item website">
           <div>
             <a href="https://github.com/gy1016/terranova" target="blank">
               <img src={github} alt="terranova github" />
@@ -28,7 +28,7 @@ function Header() {
             </a>
           </div>
         </div>
-        <div className="item">
+        <div className="item button">
           <div className="switch-button">
             <img src={sun} alt="terranova sun" />
           </div>
