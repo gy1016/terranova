@@ -27,7 +27,11 @@
 
 # 文档
 
-Terranova 的[官网](http://www.sgyat.cn/terranova/)在这里！
+Terranova 的[官网](http://www.sgyat.cn/terranova/)在这里！官网源码在该仓库的 `document` 分支，使用如下代码进行分支切换：
+
+```git
+git checkout document
+```
 
 # 案例
 
@@ -53,10 +57,6 @@ import { Engine } from "terranova";
 const terranova = new Engine("lamb");
 terranova.run();
 ```
-
-我们来看看效果：
-
-![Engine Architecture](http://121.199.160.202/images/project/lamb3d/earth.png)
 
 ## 热力图计算
 
@@ -103,10 +103,6 @@ heatMapLayer.addPoints(heatPoints);
 terranova.scene.addLayer(heatMapLayer);
 terranova.run();
 ```
-
-我们来看看效果：
-
-![WASM热力图生成效果](http://121.199.160.202/images/project/lamb3d/heatMap.png)
 
 # 参考仓库
 
